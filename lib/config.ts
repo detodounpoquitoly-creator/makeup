@@ -27,6 +27,7 @@ const defaults: ConfigMap = {
   hold_minutos: "60",
   horas_vence_transferencia: "12",
   min_extra: "10",
+  caldav_url: "https://caldav.icloud.com/",
 };
 
 /** Configuración clave/valor leída de la base, con valores por defecto. */
