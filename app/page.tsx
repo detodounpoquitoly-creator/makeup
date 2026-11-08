@@ -49,7 +49,6 @@ export default async function Home() {
               {cfg.marca_sufijo ? <span className="s">{cfg.marca_sufijo}</span> : null}
             </Link>
             <div className="topbtns">
-              <Link href="/admin" className="btn btn-out btn-sm">✏️ EDITAR</Link>
               <Link href="/reservar" className="btn btn-pri btn-sm only-desktop">RESERVAR {flecha}</Link>
             </div>
           </div>
@@ -85,7 +84,11 @@ export default async function Home() {
             </p>
           </div>
           <div className="hero-img">
-            <Arte hues={["#3e2b22", "#8a5a44", "#ddb9a3"]} abajo={`${(cfg.marca || "").toLowerCase()} makeup`} />
+            {cfg.apariencia_hero_imagen ? (
+              <img src={cfg.apariencia_hero_imagen} alt={`${cfg.marca || "Maquillaje"} — portada`} />
+            ) : (
+              <Arte hues={["#3e2b22", "#8a5a44", "#ddb9a3"]} abajo={`${(cfg.marca || "").toLowerCase()} makeup`} />
+            )}
             <span className="img-tag">{cfg.hero_tag}</span>
           </div>
         </section>
@@ -134,14 +137,18 @@ export default async function Home() {
             ))}
           </div>
           <p className="muted" style={{ marginTop: "1.5rem" }}>
-            Subí tus fotos reales desde EDITAR.
+            Subí tus fotos reales desde el panel (Apariencias y Servicios).
           </p>
         </section>
 
         {/* ── Sobre mí ── */}
         <section id="sobre" className="about scroll-mt-28">
           <div className="about-photo">
-            <Arte hues={["#2b2320", "#6e4a3a", "#c9a08c"]} abajo={(cfg.marca || "").toLowerCase()} />
+            {cfg.apariencia_sobre_imagen ? (
+              <img src={cfg.apariencia_sobre_imagen} alt={cfg.marca || "Sobre mí"} />
+            ) : (
+              <Arte hues={["#2b2320", "#6e4a3a", "#c9a08c"]} abajo={(cfg.marca || "").toLowerCase()} />
+            )}
           </div>
           <div>
             <p className="kicker">SOBRE MÍ</p>

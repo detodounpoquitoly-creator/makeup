@@ -1,4 +1,4 @@
-import { sb } from "@/lib/supabase";
+import { sb, configurado } from "@/lib/supabase";
 import { getConfig, type ConfigMap } from "@/lib/config";
 import { liberarVencidos } from "@/lib/turnos";
 
@@ -44,6 +44,13 @@ export type AvisoRow = {
   creado_at: string;
 };
 
+export type Integraciones = {
+  supabase: boolean;
+  mercadopago: boolean;
+  resend: boolean;
+  caldav: boolean;
+};
+
 export type DatosAdmin = {
   servicios: ServicioRow[];
   categorias: CategoriaRow[];
@@ -52,6 +59,7 @@ export type DatosAdmin = {
   turnos: TurnoRow[];
   avisos: AvisoRow[];
   config: ConfigMap;
+  integraciones: Integraciones;
 };
 
 /** Todo lo que usa el panel, en una sola lectura (lo comparten la página y el API). */
@@ -81,5 +89,11 @@ export async function datosAdmin(): Promise<DatosAdmin> {
     turnos: (tur.data ?? []) as unknown as TurnoRow[],
     avisos: (avi.data ?? []) as unknown as AvisoRow[],
     config: cfg,
+    integraciones: {
+      supabase: configurado,
+      mercadopago: Boolean(process.env.MP_ACCESS_TOKEN),
+      resend: Boolean(process.env.RESEND_API_KEY),
+      caldav: Boolean((cfg.caldav_user ?? "").trim() && (cfg.caldav_pass ?? "").trim()),
+    },
   };
 }
