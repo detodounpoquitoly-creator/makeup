@@ -5,6 +5,8 @@ import { liberarVencidos } from "@/lib/turnos";
 import { avisar } from "@/lib/mail";
 import { calcularSlots, aISO } from "@/lib/agenda";
 import { pesos } from "@/lib/config";
+import type { TurnoCal } from "@/lib/calendario";
+import { subir as subirCalDAV } from "@/lib/caldav";
 
 type Servicio = {
   id: number;
@@ -135,6 +137,9 @@ export async function POST(req: NextRequest) {
         b.notas ? `Notas: ${b.notas}` : "",
       ].filter(Boolean).join("\n"),
     );
+
+    // Lo escribimos en el calendario de iCloud de Sofy (si está conectado).
+    void subirCalDAV({ ...creado, id: creado.id, codigo, telefono, estado: "PENDIENTE", servicio: { nombre: servicio.nombre, duracion_min: servicio.duracion_min, precio: servicio.precio } } as TurnoCal & { servicio: { nombre: string; duracion_min: number; precio: number } | null });
 
     return NextResponse.json({ id: creado.id, codigo, fin: elegido.fin });
   } catch (e) {
