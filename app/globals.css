@@ -1,0 +1,39 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #f3efe9;
+  --panel: #fbf8f4;
+  --card: #ffffff;
+  --fg: #4a342a;
+  --fg-suave: #6b544a;
+  --muted: #9a867c;
+  --linea: #e3dad0;
+  --acento: #5d4037;
+  --acento-suave: #7a5c50;
+  --acento-fg: #f6f1ea;
+  --chip: #efe7dd;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-panel: var(--panel);
+  --color-card: var(--card);
+  --color-fg: var(--fg);
+  --color-fg-suave: var(--fg-suave);
+  --color-muted: var(--muted);
+  --color-linea: var(--linea);
+  --color-acento: var(--acento);
+  --color-acento-suave: var(--acento-suave);
+  --color-acento-fg: var(--acento-fg);
+  --color-chip: var(--chip);
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+.serif {
+  font-family: Georgia, "Times New Roman", serif;
+}
