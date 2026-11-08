@@ -12,14 +12,17 @@ create table if not exists public.categorias (
   orden int not null default 0
 );
 
-insert into public.categorias (nombre, tag, orden) values
+insert into public.categorias (nombre, tag, orden)
+select v.nombre, v.tag, v.orden
+from (values
   ('Maquillaje',     'Looks impecables para cada ocasión',        1),
   ('Cejas',          'Diseño y arquitectura de tu mirada',        2),
   ('Pestañas',       'Miradas que hablan solas',                  3),
   ('Promo Combo',    'Combos de belleza al mejor precio',         4),
   ('Asesoramientos', 'Aprendé a realzar tu belleza',              5),
   ('Cursos',         'Formación profesional',                     6)
-on conflict do nothing;
+) as v(nombre, tag, orden)
+where not exists (select 1 from public.categorias c where c.nombre = v.nombre);
 
 -- ─── Cada servicio pertenece a una categoría ─────────────────────────────────
 alter table public.servicios add column if not exists categoria_id int references public.categorias (id);

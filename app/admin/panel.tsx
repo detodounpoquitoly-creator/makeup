@@ -466,6 +466,7 @@ type ClaveConfig =
 
 const CAMPOS: { clave: ClaveConfig; etiqueta: string; area?: boolean; ayuda?: string }[] = [
   { clave: "marca", etiqueta: "Nombre corto (logo)" },
+  { clave: "nombre_negocio", etiqueta: "Título de la pestaña", ayuda: "Ej: Sofy MakeUp — Reservá tu turno" },
   { clave: "marca_sufijo", etiqueta: "Sufijo del logo (ej: MAKEUP)" },
   { clave: "kicker", etiqueta: "Línea de arriba de la portada (ej: MAQUILLADORA PROFESIONAL · BUENOS AIRES)" },
   { clave: "hero_titulo", etiqueta: "Portada — título (parte 1)" },
