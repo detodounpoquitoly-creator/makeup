@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import type { DatosAdmin, ServicioRow, BloqueoRow } from "@/lib/datos-admin";
+import type { DatosAdmin, ServicioRow, CategoriaRow, BloqueoRow } from "@/lib/datos-admin";
 
-const TABS = ["Turnos", "Servicios", "Agenda", "Bloqueos", "Config", "Avisos"] as const;
+const TABS = ["Turnos", "Servicios", "Categorías", "Agenda", "Bloqueos", "Config", "Avisos"] as const;
 type Tab = (typeof TABS)[number];
 
 const DIAS_NOMBRE = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
@@ -72,7 +72,7 @@ export default function PanelAdmin({ inicial }: { inicial: DatosAdmin }) {
   return (
     <main className="mx-auto max-w-3xl px-4 py-8 pb-20 sm:px-6">
       <div className="flex items-center justify-between">
-        <h1 className="serif text-2xl">Panel — {datos.config.nombre_negocio}</h1>
+        <h1 className="serif text-2xl">Panel — {datos.config.marca || datos.config.nombre_negocio}</h1>
         <div className="flex items-center gap-3 text-sm">
           <a href="/" className="text-muted hover:underline">Ver sitio</a>
           <button type="button" onClick={salir} className="text-muted hover:underline">Salir</button>
@@ -128,6 +128,7 @@ export default function PanelAdmin({ inicial }: { inicial: DatosAdmin }) {
                   <div className="min-w-0">
                     <p className="font-medium">
                       {laFecha(t.fecha)} · {t.hora}–{t.fin} · {t.servicio?.nombre}
+                      {t.codigo ? <span className="muted ml-2">{t.codigo}</span> : null}
                     </p>
                     <p className="mt-1 text-sm text-fg-suave">
                       {t.nombre} · {t.telefono}
@@ -178,9 +179,77 @@ export default function PanelAdmin({ inicial }: { inicial: DatosAdmin }) {
       {tab === "Servicios" && (
         <section className="mt-5 space-y-4">
           {datos.servicios.map((s) => (
-            <ServicioForm key={s.id} servicio={s} guardar={guardar} />
+            <ServicioForm key={s.id} servicio={s} categorias={datos.categorias} guardar={guardar} />
           ))}
-          <ServicioForm servicio={null} guardar={guardar} />
+          <ServicioForm servicio={null} categorias={datos.categorias} guardar={guardar} />
+        </section>
+      )}
+
+      {/* ── Categorías ── */}
+      {tab === "Categorías" && (
+        <section className="mt-5 space-y-4">
+          {datos.categorias.map((c) => (
+            <form
+              key={c.id}
+              className="rounded-2xl bg-card p-4 shadow-sm"
+              onSubmit={(e) => {
+                e.preventDefault();
+                const f = new FormData(e.currentTarget);
+                guardar(
+                  {
+                    tabla: "categoria",
+                    accion: "editar",
+                    datos: { id: c.id, nombre: f.get("nombre"), tag: f.get("tag"), orden: f.get("orden") },
+                  },
+                  "Categoría guardada",
+                );
+              }}
+            >
+              <p className="serif text-lg">Categoría</p>
+              <div className="mt-3 grid grid-cols-3 gap-2">
+                <input name="nombre" defaultValue={c.nombre} className={inputCls} placeholder="Nombre" required />
+                <input name="tag" defaultValue={c.tag} className={`${inputCls} col-span-2`} placeholder="Frase corta para la web" />
+                <input name="orden" type="number" min={0} defaultValue={c.orden} className={inputCls} placeholder="Orden" />
+              </div>
+              <div className="mt-3 flex items-center justify-between">
+                <p className="text-xs text-muted">
+                  {datos.servicios.filter((s) => s.categoria_id === c.id).length} servicios
+                </p>
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => guardar({ tabla: "categoria", accion: "borrar", datos: { id: c.id } }, "Categoría borrada")}
+                    className="text-sm text-muted hover:underline"
+                  >
+                    Borrar
+                  </button>
+                  <button type="submit" className="rounded-full bg-acento px-4 py-1.5 text-sm text-acento-fg hover:bg-acento-suave">
+                    Guardar
+                  </button>
+                </div>
+              </div>
+            </form>
+          ))}
+
+          <form
+            className="rounded-2xl border-2 border-dashed border-linea bg-card p-4 shadow-sm"
+            onSubmit={(e) => {
+              e.preventDefault();
+              const f = new FormData(e.currentTarget);
+              guardar({ tabla: "categoria", accion: "crear", datos: { nombre: f.get("nombre"), tag: f.get("tag"), orden: f.get("orden") } }, "Categoría agregada");
+              e.currentTarget.reset();
+            }}
+          >
+            <p className="serif text-lg">Agregar categoría</p>
+            <div className="mt-3 grid grid-cols-3 gap-2">
+              <input name="nombre" className={inputCls} placeholder="Nombre" required />
+              <input name="tag" className={`${inputCls} col-span-2`} placeholder="Frase corta para la web" />
+              <input name="orden" type="number" min={0} defaultValue={99} className={inputCls} placeholder="Orden" />
+            </div>
+            <button type="submit" className="mt-3 rounded-full bg-acento px-4 py-1.5 text-sm text-acento-fg hover:bg-acento-suave">
+              Agregar
+            </button>
+          </form>
         </section>
       )}
 
@@ -188,7 +257,7 @@ export default function PanelAdmin({ inicial }: { inicial: DatosAdmin }) {
       {tab === "Agenda" && (
         <section className="mt-5 space-y-3">
           <p className="text-sm text-muted">
-            Horarios por día (te atiende entre esas horas). Vacío = el día no atiende.
+            Horarios por día (te atiende entre esas horas). Desmarcado = el día no aparece en el calendario.
           </p>
           {DIAS_NOMBRE.map((nombre, dia) => (
             <AgendaFila key={dia} dia={dia} nombre={nombre} fila={datos.agenda.find((a) => a.dia === dia) ?? null} guardar={guardar} />
@@ -281,7 +350,9 @@ type GuardarFn = (cuerpo: Record<string, unknown>, mensaje: string) => Promise<v
 
 const inputCls = "rounded-xl border border-linea bg-panel px-3 py-2 text-sm outline-none focus:border-acento";
 
-function ServicioForm({ servicio, guardar }: { servicio: ServicioRow | null; guardar: GuardarFn }) {
+function ServicioForm({
+  servicio, categorias, guardar,
+}: { servicio: ServicioRow | null; categorias: CategoriaRow[]; guardar: GuardarFn }) {
   const esNuevo = servicio === null;
   const [form, setForm] = useState({
     nombre: servicio?.nombre ?? "",
@@ -292,6 +363,7 @@ function ServicioForm({ servicio, guardar }: { servicio: ServicioRow | null; gua
     imagen: servicio?.imagen ?? "",
     orden: String(servicio?.orden ?? 0),
     activo: servicio?.activo ?? true,
+    categoria_id: String(servicio?.categoria_id ?? ""),
   });
   const set = (k: keyof typeof form) => (e: { target: { value: string; type?: string; checked?: boolean } }) =>
     setForm((f) => ({
@@ -317,6 +389,12 @@ function ServicioForm({ servicio, guardar }: { servicio: ServicioRow | null; gua
       <p className="serif text-lg">{esNuevo ? "Agregar servicio" : "Editar servicio"}</p>
       <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
         <input className={inputCls} placeholder="Nombre" value={form.nombre} onChange={set("nombre")} required />
+        <select className={inputCls} value={form.categoria_id} onChange={set("categoria_id")}>
+          <option value="">Sin categoría</option>
+          {categorias.map((c) => (
+            <option key={c.id} value={c.id}>{c.nombre}</option>
+          ))}
+        </select>
         <input className={inputCls} type="number" min={15} step={5} placeholder="Duración (min)" value={form.duracion_min} onChange={set("duracion_min")} required />
         <input className={inputCls} type="number" min={0} placeholder="Precio total" value={form.precio} onChange={set("precio")} required />
         <input className={inputCls} type="number" min={0} placeholder="Seña" value={form.sena_monto} onChange={set("sena_monto")} required />
@@ -377,31 +455,43 @@ function AgendaFila({
   );
 }
 
+type ClaveConfig =
+  | "marca" | "marca_sufijo" | "kicker"
+  | "hero_titulo" | "hero_acento" | "hero_texto" | "hero_tag"
+  | "sobre_titulo" | "sobre_p1" | "sobre_p2" | "sobre_stats"
+  | "estudio_direccion" | "estudio_horarios" | "estudio_nota"
+  | "instagram" | "telefono_wa" | "email_admin" | "alias_cbu"
+  | "nombre_negocio"
+  | "hold_minutos" | "horas_vence_transferencia" | "min_extra";
+
+const CAMPOS: { clave: ClaveConfig; etiqueta: string; area?: boolean; ayuda?: string }[] = [
+  { clave: "marca", etiqueta: "Nombre corto (logo)" },
+  { clave: "marca_sufijo", etiqueta: "Sufijo del logo (ej: MAKEUP)" },
+  { clave: "kicker", etiqueta: "Línea de arriba de la portada (ej: MAQUILLADORA PROFESIONAL · BUENOS AIRES)" },
+  { clave: "hero_titulo", etiqueta: "Portada — título (parte 1)" },
+  { clave: "hero_acento", etiqueta: "Portada — título en color (parte 2)" },
+  { clave: "hero_texto", etiqueta: "Portada — texto", area: true },
+  { clave: "hero_tag", etiqueta: "Portada — etiqueta de la foto (ej: LOOK NOVIA · 2026)" },
+  { clave: "sobre_titulo", etiqueta: "Sobre mí — título" },
+  { clave: "sobre_p1", etiqueta: "Sobre mí — párrafo 1", area: true },
+  { clave: "sobre_p2", etiqueta: "Sobre mí — párrafo 2", area: true },
+  { clave: "sobre_stats", etiqueta: "Sobre mí — cifras (separadas por | )", ayuda: "Ej: +150 novias|+800 looks sociales|8 años de oficio" },
+  { clave: "estudio_direccion", etiqueta: "Estudio — dirección" },
+  { clave: "estudio_horarios", etiqueta: "Estudio — horarios" },
+  { clave: "estudio_nota", etiqueta: "Estudio — nota (ej: Con turno previo)" },
+  { clave: "instagram", etiqueta: "Instagram (ej: sofy.makeup)" },
+  { clave: "telefono_wa", etiqueta: "WhatsApp (formato 549…)", ayuda: "Para los botones de WhatsApp del sitio." },
+  { clave: "email_admin", etiqueta: "Tu email", ayuda: "Donde llegan los avisos de reservas." },
+  { clave: "alias_cbu", etiqueta: "Alias / CBU para la seña", area: true },
+  { clave: "hold_minutos", etiqueta: "Minutos de bloqueo del horario (ej: 60)" },
+  { clave: "horas_vence_transferencia", etiqueta: "Horas de gracia para transferencias" },
+  { clave: "min_extra", etiqueta: "Minutos de recambio entre turnos" },
+];
+
 function Configuracion({ config, guardar }: { config: Record<string, string>; guardar: GuardarFn }) {
-  const [form, setForm] = useState({
-    nombre_negocio: config.nombre_negocio ?? "",
-    texto_hero: config.texto_hero ?? "",
-    texto_sobre_mi: config.texto_sobre_mi ?? "",
-    instagram: config.instagram ?? "",
-    telefono_wa: config.telefono_wa ?? "",
-    email_admin: config.email_admin ?? "",
-    alias_cbu: config.alias_cbu ?? "",
-    hold_minutos: config.hold_minutos ?? "60",
-    horas_vence_transferencia: config.horas_vence_transferencia ?? "12",
-    min_extra: config.min_extra ?? "10",
-  });
-  const CAMPOS: { clave: keyof typeof form; etiqueta: string; area?: boolean; ayuda?: string }[] = [
-    { clave: "nombre_negocio", etiqueta: "Nombre del negocio" },
-    { clave: "texto_hero", etiqueta: "Texto principal (hero)", area: true },
-    { clave: "texto_sobre_mi", etiqueta: "Sobre mí", area: true },
-    { clave: "instagram", etiqueta: "Instagram (ej: @tucuenta)" },
-    { clave: "telefono_wa", etiqueta: "WhatsApp (formato 549…)", ayuda: "Para los botones de WhatsApp del sitio." },
-    { clave: "email_admin", etiqueta: "Tu email", ayuda: "Donde llegan los avisos de reservas." },
-    { clave: "alias_cbu", etiqueta: "Alias / CBU para la seña", area: true },
-    { clave: "hold_minutos", etiqueta: "Minutos de bloqueo del horario (ej: 60)" },
-    { clave: "horas_vence_transferencia", etiqueta: "Horas de gracia para transferencias" },
-    { clave: "min_extra", etiqueta: "Minutos de recambio entre turnos" },
-  ];
+  const [form, setForm] = useState<Record<ClaveConfig, string>>(
+    Object.fromEntries(CAMPOS.map(({ clave }) => [clave, config[clave] ?? ""])) as Record<ClaveConfig, string>,
+  );
 
   return (
     <form
@@ -415,6 +505,7 @@ function Configuracion({ config, guardar }: { config: Record<string, string>; gu
       }}
     >
       <p className="serif text-lg">Configuración del sitio</p>
+      <p className="mt-1 text-sm text-muted">Acá se edita todo lo que ve la web: portada, textos, Sobre mí y datos de contacto.</p>
       <div className="mt-4 space-y-3">
         {CAMPOS.map(({ clave, etiqueta, area, ayuda }) => (
           <label key={clave} className="block">

@@ -83,6 +83,37 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true });
     }
 
+    // ── Categorías ──
+    if (tabla === "categoria") {
+      const campos = {
+        nombre: texto(datos.nombre),
+        tag: texto(datos.tag),
+        orden: entero(datos.orden, 0, 999),
+      };
+      if (!campos.nombre) {
+        return NextResponse.json({ error: "La categoría necesita nombre." }, { status: 400 });
+      }
+      if (accion === "crear") {
+        const { error } = await sbc.from("categorias").insert(campos);
+        if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+      } else if (accion === "editar") {
+        if (!Number.isInteger(Number(datos.id))) {
+          return NextResponse.json({ error: "Categoría inválida." }, { status: 400 });
+        }
+        const { error } = await sbc.from("categorias").update(campos).eq("id", Number(datos.id));
+        if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+      } else if (accion === "borrar") {
+        const id = Number(datos.id);
+        // Dejar los servicios sin categoría en vez de frenar el borrado.
+        await sbc.from("servicios").update({ categoria_id: null }).eq("categoria_id", id);
+        const { error } = await sbc.from("categorias").delete().eq("id", id);
+        if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+      } else {
+        return NextResponse.json({ error: "Acción inválida." }, { status: 400 });
+      }
+      return NextResponse.json({ ok: true });
+    }
+
     // ── Servicios ──
     if (tabla === "servicio") {
       const campos = {
@@ -94,6 +125,9 @@ export async function POST(req: NextRequest) {
         descripcion: texto(datos.descripcion) || null,
         activo: datos.activo !== false,
         orden: entero(datos.orden, 0, 999),
+        categoria_id: Number.isInteger(Number(datos.categoria_id)) && Number(datos.categoria_id) > 0
+          ? Number(datos.categoria_id)
+          : null,
       };
       if (!campos.nombre) {
         return NextResponse.json({ error: "El servicio necesita nombre." }, { status: 400 });

@@ -12,12 +12,16 @@ export type ServicioRow = {
   descripcion: string | null;
   activo: boolean;
   orden: number;
+  categoria_id: number | null;
 };
+
+export type CategoriaRow = { id: number; nombre: string; tag: string; orden: number };
 
 export type AgendaRow = { id: number; dia: number; desde: string; hasta: string; activo: boolean };
 export type BloqueoRow = { id: number; fecha: string; motivo: string | null };
 export type TurnoRow = {
   id: number;
+  codigo: string | null;
   fecha: string;
   hora: string;
   fin: string;
@@ -42,6 +46,7 @@ export type AvisoRow = {
 
 export type DatosAdmin = {
   servicios: ServicioRow[];
+  categorias: CategoriaRow[];
   agenda: AgendaRow[];
   bloqueos: BloqueoRow[];
   turnos: TurnoRow[];
@@ -53,13 +58,14 @@ export type DatosAdmin = {
 export async function datosAdmin(): Promise<DatosAdmin> {
   await liberarVencidos();
   const sbc = sb();
-  const [serv, ag, blo, tur, avi, cfg] = await Promise.all([
+  const [serv, cat, ag, blo, tur, avi, cfg] = await Promise.all([
     sbc.from("servicios").select("*").order("orden"),
+    sbc.from("categorias").select("*").order("orden"),
     sbc.from("agenda").select("*").order("dia"),
     sbc.from("bloqueos").select("*").order("fecha"),
     sbc
       .from("turnos")
-      .select("id,fecha,hora,fin,nombre,telefono,instagram,notas,estado,sena_monto,metodo,vence_at,servicio: id_servicio(nombre)")
+      .select("id,fecha,hora,fin,nombre,telefono,instagram,notas,estado,sena_monto,metodo,vence_at,codigo,servicio: id_servicio(nombre)")
       .order("fecha", { ascending: false })
       .order("hora", { ascending: false })
       .limit(400),
@@ -69,6 +75,7 @@ export async function datosAdmin(): Promise<DatosAdmin> {
 
   return {
     servicios: (serv.data ?? []) as ServicioRow[],
+    categorias: (cat.data ?? []) as unknown as CategoriaRow[],
     agenda: (ag.data ?? []) as AgendaRow[],
     bloqueos: (blo.data ?? []) as BloqueoRow[],
     turnos: (tur.data ?? []) as unknown as TurnoRow[],

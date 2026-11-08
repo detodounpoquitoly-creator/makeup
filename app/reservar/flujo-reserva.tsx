@@ -2,38 +2,46 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-
-export type Servicio = {
-  id: number;
-  nombre: string;
-  duracion_min: number;
-  precio: number;
-  sena_monto: number;
-  imagen: string | null;
-  descripcion: string | null;
-};
+import type { CategoriaFlujo, ServicioFlujo } from "./page";
 
 type Props = {
-  servicios: Servicio[];
-  config: { alias_cbu: string; telefono_wa: string; hold_minutos: string; mpActivo: boolean };
-  servicioInicial: number | null;
+  categorias: CategoriaFlujo[];
+  servicios: ServicioFlujo[];
+  config: {
+    alias_cbu: string;
+    telefono_wa: string;
+    marca: string;
+    estudio_direccion: string;
+    estudio_horarios: string;
+    estudio_nota: string;
+    hold_minutos: string;
+    mpActivo: boolean;
+  };
+  categoriaInicial: number | null;
 };
 
 const DIAS = ["L", "M", "X", "J", "V", "S", "D"];
-const MESES = [
-  "enero", "febrero", "marzo", "abril", "mayo", "junio",
-  "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
-];
+const MESES = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
 const aISO = (a: number, m: number, d: number) =>
   `${a}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
 const hoyISO = () => aISO(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
 const pesos = (n: number) => `$ ${n.toLocaleString("es-AR")}`;
 
-export default function FlujoReserva({ servicios, config, servicioInicial }: Props) {
-  const [paso, setPaso] = useState(1);
-  const [servicio, setServicio] = useState<Servicio | null>(
-    servicios.find((s) => s.id === servicioInicial) ?? null,
-  );
+type Paso = "servicio" | "detalle" | "turno" | "datos" | "listo";
+const ETIQUETAS: [Paso, string][] = [
+  ["servicio", "Servicio"],
+  ["detalle", "Detalle"],
+  ["turno", "Turno"],
+  ["datos", "Datos"],
+];
+const NUMPASO: Record<Paso, number> = { servicio: 1, detalle: 2, turno: 3, datos: 4, listo: 4 };
+
+type TurnoCreado = { id: number; codigo: string; fecha: string; hora: string; fin?: string };
+
+export default function FlujoReserva({ categorias, servicios, config, categoriaInicial }: Props) {
+  const [paso, setPaso] = useState<Paso>(categoriaInicial ? "servicio" : "servicio");
+  const [catId, setCatId] = useState<number | null>(categoriaInicial);
+  const [servicio, setServicio] = useState<ServicioFlujo | null>(null);
   const [hoy, setHoy] = useState("");
 
   // ── Calendario ──
@@ -47,15 +55,18 @@ export default function FlujoReserva({ servicios, config, servicioInicial }: Pro
   // ── Datos / turno ──
   const [nombre, setNombre] = useState("");
   const [telefono, setTelefono] = useState("");
+  const [telefono2, setTelefono2] = useState("");
   const [instagram, setInstagram] = useState("");
-  const [notas, setNotas] = useState("");
-  const [turnoId, setTurnoId] = useState<number | null>(null);
+  const [turno, setTurno] = useState<TurnoCreado | null>(null);
   const [error, setError] = useState("");
   const [enviando, setEnviando] = useState(false);
 
   useEffect(() => setHoy(hoyISO()), []);
 
-  // Puntos del calendario: días con turnos libres para el servicio elegido.
+  const servicioDe = (n: number) => servicios.find((s) => s.id === n) ?? null;
+  const catDe = (n: number) => categorias.find((c) => c.id === n) ?? null;
+
+  // Puntos del calendario: días con lugares libres para el servicio elegido.
   const cargarResumen = useCallback(async () => {
     if (!servicio) return;
     const mes = `${anMes[0]}-${String(anMes[1] + 1).padStart(2, "0")}`;
@@ -67,12 +78,15 @@ export default function FlujoReserva({ servicios, config, servicioInicial }: Pro
   }, [servicio, anMes]);
 
   useEffect(() => {
-    if (paso === 2) cargarResumen();
+    if (paso === "turno") cargarResumen();
   }, [paso, cargarResumen]);
 
   // Horarios del día elegido.
   useEffect(() => {
-    if (!fecha || !servicio) { setSlots([]); return; }
+    if (!fecha || !servicio || paso !== "turno") {
+      setSlots([]);
+      return;
+    }
     let vivo = true;
     setSlotsCargando(true);
     setSlot(null);
@@ -81,7 +95,7 @@ export default function FlujoReserva({ servicios, config, servicioInicial }: Pro
       .then((j) => { if (vivo) setSlots(j.slots ?? []); })
       .finally(() => { if (vivo) setSlotsCargando(false); });
     return () => { vivo = false; };
-  }, [fecha, servicio]);
+  }, [fecha, servicio, paso]);
 
   const diasGrilla = useMemo(() => {
     const [a, m] = anMes;
@@ -103,7 +117,15 @@ export default function FlujoReserva({ servicios, config, servicioInicial }: Pro
     });
   };
 
-  const puedeSeguir = paso === 1 ? !!servicio : paso === 2 ? !!(fecha && slot) : false;
+  // Validación como la demo: nombre completo, teléfono válido y repetido igual.
+  const dig = (v: string) => (v || "").replace(/\D/g, "");
+  const datosValidos = nombre.trim().length >= 3 && dig(telefono).length >= 8 && dig(telefono) === dig(telefono2);
+
+  const irA = (p: Paso) => {
+    setError("");
+    setPaso(p);
+    window.scrollTo({ top: 0 });
+  };
 
   const crearTurno = async () => {
     setError("");
@@ -119,13 +141,13 @@ export default function FlujoReserva({ servicios, config, servicioInicial }: Pro
           nombre,
           telefono,
           instagram,
-          notas,
         }),
       });
       const j = await r.json();
       if (!r.ok) throw new Error(j.error || "No pudimos crear la reserva.");
-      setTurnoId(j.id);
-      setPaso(5);
+      setTurno(j as TurnoCreado);
+      setPaso("listo");
+      window.scrollTo({ top: 0 });
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -140,7 +162,7 @@ export default function FlujoReserva({ servicios, config, servicioInicial }: Pro
       const r = await fetch("/api/pago/mercadopago", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id_turno: turnoId }),
+        body: JSON.stringify({ id_turno: turno!.id }),
       });
       const j = await r.json();
       if (!r.ok) throw new Error(j.error || "No pudimos iniciar el pago.");
@@ -159,99 +181,200 @@ export default function FlujoReserva({ servicios, config, servicioInicial }: Pro
       await fetch("/api/turnos/medio", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: turnoId, medio: "TRANSFERENCIA" }),
+        body: JSON.stringify({ id: turno!.id, medio: "TRANSFERENCIA" }),
       });
     } finally {
       setEnviando(false);
     }
-    window.location.href = `/reserva/${turnoId}`;
+    window.location.href = `/reserva/${turno!.id}`;
   };
 
-  if (!servicios.length) {
+  const nomDia = (iso: string) => {
+    const [a, m, d] = iso.split("-").map(Number);
+    return `${d} de ${MESES[m - 1]} de ${a}`;
+  };
+
+  const servicioCat = catId ? servicios.filter((s) => s.categoria_id === catId) : [];
+
+  // ── Pantalla de éxito (como la demo) ──
+  if (paso === "listo" && turno && servicio) {
     return (
-      <main className="mx-auto max-w-xl px-6 py-16 text-center">
-        <h1 className="serif text-3xl">Reservar turno</h1>
-        <p className="mt-4 text-fg-suave">Todavía no hay servicios cargados.</p>
-        <Link href="/" className="mt-6 inline-block underline">Volver</Link>
-      </main>
+      <div className="bk fade-in" style={{ textAlign: "center", paddingTop: "3.5rem" }} key="ok">
+        <div className="mx-auto flex items-center justify-center text-white" style={{ width: 80, height: 80, marginBottom: "1.5rem", borderRadius: "50%", background: "var(--acento)" }}>
+          <svg style={{ width: 36, height: 36 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12l5 5L20 6" /></svg>
+        </div>
+        <h2 className="serif" style={{ fontSize: "2.2rem", marginBottom: "0.5rem" }}>¡Reserva registrada!</h2>
+        <p className="body-txt">Código <b>{turno.codigo}</b></p>
+        <p className="muted" style={{ marginBottom: "2rem", textTransform: "capitalize" }}>{nomDia(turno.fecha)} — {turno.hora}</p>
+
+        <div className="card p-5 text-left" style={{ marginBottom: "1.5rem" }}>
+          <p className="font-semibold" style={{ color: "var(--fg)" }}>{servicio.nombre}</p>
+          <p className="muted mt-1">A nombre de {nombre}</p>
+          <div style={{ borderTop: "1px solid #f0ebe3", marginTop: "1rem", paddingTop: "1rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span className="lbl" style={{ margin: 0 }}>TOTAL</span>
+            <span style={{ textAlign: "right" }}>
+              <span className="font-semibold" style={{ fontSize: "1.1rem", color: "var(--fg)" }}>{pesos(servicio.precio)}</span>
+              <span className="muted" style={{ display: "block" }}>seña {pesos(servicio.sena_monto)} · {servicio.duracion_min} min</span>
+            </span>
+          </div>
+        </div>
+
+        {error && <p className="status-err mb-4">{error}</p>}
+
+        {config.mpActivo && (
+          <>
+            <button type="button" onClick={pagarMP} disabled={enviando} className="btn btn-pri btn-block">
+              {enviando ? "Abriendo Mercado Pago…" : "PAGAR SEÑA CON MERCADO PAGO"}
+            </button>
+            <p className="muted mt-2">El turno se confirma solo cuando entra el pago.</p>
+            <div className="card p-4 mt-4 text-left" style={{ textAlign: "left" }}>
+              <p className="muted" style={{ letterSpacing: "0.2em", fontSize: 10, fontWeight: 600 }}>O PAGÁ POR TRANSFERENCIA</p>
+              <p className="text-sm mt-2 break-all" style={{ color: "var(--fg-suave)" }}>{config.alias_cbu}</p>
+              <button type="button" onClick={elegirTransferencia} disabled={enviando} className="btn btn-pri btn-block mt-3">
+                {enviando ? "Guardando…" : "YA HICE LA TRANSFERENCIA"}
+              </button>
+              <p className="muted mt-2">Queda en revisión hasta que llega el pago; te avisamos.</p>
+            </div>
+          </>
+        )}
+        {!config.mpActivo && (
+          <div className="card p-4 text-left">
+            <p className="muted" style={{ letterSpacing: "0.2em", fontSize: 10, fontWeight: 600 }}>PAGÁ LA SEÑA POR TRANSFERENCIA</p>
+            <p className="text-sm mt-2 break-all" style={{ color: "var(--fg-suave)" }}>{config.alias_cbu}</p>
+            <button type="button" onClick={elegirTransferencia} disabled={enviando} className="btn btn-pri btn-block mt-3">
+              {enviando ? "Guardando…" : "YA HICE LA TRANSFERENCIA"}
+            </button>
+            <p className="muted mt-2">El turno queda bloqueado y se confirma cuando llega el pago.</p>
+          </div>
+        )}
+
+        <Link href={`/reserva/${turno.id}`} className="btn btn-pri btn-block" style={{ marginTop: "1.5rem" }}>VER MI RESERVA</Link>
+        <Link href="/" className="btn btn-out btn-block mt-2">VOLVER AL INICIO</Link>
+      </div>
     );
   }
 
-  return (
-    <main className="mx-auto max-w-xl px-6 py-8 pb-20">
-      <Link href="/" className="text-sm text-muted hover:underline">← Volver</Link>
-      <h1 className="serif mt-4 text-3xl">Reservar turno</h1>
+  const pasoNum = NUMPASO[paso];
 
-      {/* Indicador de pasos */}
-      <div className="mt-4 flex items-center gap-2 text-xs text-muted">
-        {["Servicio", "Día", "Datos", "Seña"].map((t, i) => {
-          const n = i + 1;
-          const activo = paso === n || (paso === 5 && n === 4);
-          const hecho = paso > n && paso !== 5;
-          return (
-            <div key={t} className={`flex items-center gap-1 ${activo ? "text-fg font-medium" : ""}`}>
-              <span className={`flex h-5 w-5 items-center justify-center rounded-full ${activo ? "bg-acento text-acento-fg" : hecho ? "bg-chip text-fg" : "bg-chip text-muted"}`}>
-                {hecho ? "✓" : n}
-              </span>
-              {t}
-            </div>
-          );
-        })}
+  return (
+    <div className="bk fade-in">
+      {/* Encabezado del paso */}
+      <div className="bk-head">
+        <button
+          className="backlink"
+          onClick={() => {
+            if (paso === "servicio" && catId) setCatId(null);
+            else if (paso === "detalle") setPaso("servicio");
+            else if (paso === "turno") setPaso("detalle");
+            else if (paso === "datos") setPaso("turno");
+          }}
+        >
+          ← Volver
+        </button>
+        <p className="steplabel">PASO {pasoNum} DE 4</p>
       </div>
 
-      {/* ── Paso 1: servicio ── */}
-      {paso === 1 && (
-        <section className="mt-6 divide-y divide-linea overflow-hidden rounded-2xl bg-card shadow-sm">
-          {servicios.map((s) => (
-            <button
-              key={s.id}
-              type="button"
-              onClick={() => setServicio(s)}
-              className={`flex w-full items-center gap-4 px-5 py-4 text-left transition-colors hover:bg-panel ${servicio?.id === s.id ? "bg-panel" : ""}`}
-            >
-              <span className={`h-4 w-4 shrink-0 rounded-full border ${servicio?.id === s.id ? "border-acento bg-acento shadow-[inset_0_0_0_3px_var(--card)]" : "border-linea"}`} />
-              {s.imagen ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={s.imagen} alt="" className="h-12 w-12 rounded-full object-cover" />
-              ) : (
-                <span className="serif flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-chip text-acento">
-                  {s.nombre.charAt(0).toUpperCase()}
+      <div className="progress">
+        {ETIQUETAS.map(([p, t], i) => (
+          <div key={p}>
+            <div className={`bar${i + 1 <= pasoNum ? " on" : ""}`} />
+            <p className={`cap${i + 1 === pasoNum ? " on" : ""}`}>{t}</p>
+          </div>
+        ))}
+      </div>
+
+      {error && <p className="status-err mb-4">{error}</p>}
+
+      {/* ── PASO 1: elegí tu servicio (categoría → servicio) ── */}
+      {paso === "servicio" && !catId && (
+        <>
+          <h2>Elegí tu servicio</h2>
+          <p className="sub">¿Qué te gustaría reservar?</p>
+          <div className="stack">
+            {categorias.map((c) => (
+              <button key={c.id} type="button" className="opt" onClick={() => setCatId(c.id)}>
+                <span className="nm">{c.nombre}</span>
+                <span className="muted flex items-center gap-2 ml-auto">
+                  {servicios.filter((s) => s.categoria_id === c.id).length} servicios →
                 </span>
-              )}
-              <span className="min-w-0 flex-1">
-                <span className="serif block">{s.nombre}</span>
-                <span className="block text-xs text-muted">{s.duracion_min} min</span>
-              </span>
-              <span className="text-right">
-                <span className="serif block">{pesos(s.precio)}</span>
-                <span className="block text-xs text-muted">seña {pesos(s.sena_monto)}</span>
-              </span>
-            </button>
-          ))}
-        </section>
+              </button>
+            ))}
+          </div>
+        </>
       )}
 
-      {/* ── Paso 2: calendario + horarios ── */}
-      {paso === 2 && servicio && (
-        <section className="mt-6">
-          <div className="rounded-2xl bg-card p-5 shadow-sm">
-            <div className="flex items-center justify-between">
+      {paso === "servicio" && catId && (
+        <>
+          <h2>{catDe(catId)?.nombre}</h2>
+          <p className="sub">
+            Elegí el servicio y su duración ·{" "}
+            <button style={{ textDecoration: "underline" }} onClick={() => setCatId(null)}>
+              cambiar categoría
+            </button>
+          </p>
+          <div className="stack">
+            {servicioCat.map((s) => (
+              <button key={s.id} type="button" className={`opt${servicio?.id === s.id ? " sel" : ""}`} onClick={() => setServicio(s)}>
+                <span className="radio" />
+                <span style={{ flex: 1 }}>
+                  <span className="nm">{s.nombre}</span>
+                  <span className="meta">
+                    {s.duracion_min} min · desde {pesos(s.precio)} · seña {pesos(s.sena_monto)}
+                  </span>
+                </span>
+              </button>
+            ))}
+          </div>
+          <button
+            type="button"
+            className="btn btn-pri btn-block"
+            style={{ marginTop: "1.5rem" }}
+            disabled={!servicio}
+            onClick={() => irA("detalle")}
+          >
+            CONTINUAR →
+          </button>
+        </>
+      )}
+
+      {/* ── PASO 2: detalle ── */}
+      {paso === "detalle" && servicio && (
+        <>
+          <h2>{servicio.nombre}</h2>
+          <p className="sub">
+            ⏱ {servicio.duracion_min} min · Seña {pesos(servicio.sena_monto)} · Total {pesos(servicio.precio)}
+          </p>
+          <p className="body-txt" style={{ marginBottom: "1.5rem" }}>{servicio.descripcion}</p>
+          <div className="card p-5" style={{ marginBottom: "1.5rem" }}>
+            <p className="lbl flex items-center gap-2">📍 EN EL ESTUDIO</p>
+            <p className="font-semibold" style={{ color: "var(--fg)" }}>{config.estudio_direccion}</p>
+            <p className="muted mt-1">{config.estudio_horarios} · {config.estudio_nota}</p>
+          </div>
+          <button type="button" className="btn btn-pri btn-block" onClick={() => irA("turno")}>CONTINUAR →</button>
+        </>
+      )}
+
+      {/* ── PASO 3: turno ── */}
+      {paso === "turno" && servicio && (
+        <>
+          <h2>Turnos</h2>
+          <p className="sub">Elegí el día y el horario</p>
+          <div className="card p-5" style={{ marginBottom: "1.25rem" }}>
+            <div className="flex items-center justify-between mb-4">
               <button
                 type="button"
-                onClick={() => !mesActualEs && moverMes(-1)}
+                className="btn btn-out btn-sm"
+                style={{ borderRadius: "50%", padding: "0.5rem 0.65rem" }}
                 disabled={mesActualEs}
-                className="rounded-full px-3 py-1 text-muted disabled:opacity-30 hover:bg-chip"
+                onClick={() => moverMes(-1)}
               >
-                ‹
+                ←
               </button>
-              <p className="serif text-lg capitalize">{MESES[anMes[1]]} {anMes[0]}</p>
-              <button type="button" onClick={() => moverMes(1)} className="rounded-full px-3 py-1 text-muted hover:bg-chip">›</button>
+              <p className="font-semibold capitalize">{MESES[anMes[1]]} {anMes[0]}</p>
+              <button type="button" className="btn btn-out btn-sm" style={{ borderRadius: "50%", padding: "0.5rem 0.65rem" }} onClick={() => moverMes(1)}>→</button>
             </div>
-
-            <div className="mt-4 grid grid-cols-7 gap-1 text-center text-xs text-muted">
-              {DIAS.map((d, i) => <span key={i}>{d}</span>)}
-            </div>
-            <div className="mt-1 grid grid-cols-7 gap-1">
+            <div className="cal-grid">
+              {DIAS.map((d, i) => <span key={`s${i}`} className="dow">{d}</span>)}
               {diasGrilla.map((d, i) => {
                 if (d === null) return <span key={`v${i}`} />;
                 const iso = aISO(anMes[0], anMes[1], d);
@@ -265,185 +388,99 @@ export default function FlujoReserva({ servicios, config, servicioInicial }: Pro
                     type="button"
                     disabled={!habilitado}
                     onClick={() => setFecha(iso)}
-                    className={`relative aspect-square rounded-xl text-sm transition-colors ${
-                      elegido ? "bg-acento text-acento-fg"
-                      : habilitado ? "text-fg hover:bg-chip"
-                      : "text-linea"
-                    }`}
+                    className={`cal-day${elegido ? " sel" : ""}`}
                   >
                     {d}
-                    {habilitado && !elegido && (
-                      <span className="absolute bottom-1.5 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-acento-suave" />
-                    )}
                   </button>
                 );
               })}
             </div>
           </div>
 
-          {fecha && (
-            <div className="mt-4 rounded-2xl bg-card p-5 shadow-sm">
-              <p className="serif mb-3 text-lg">Horarios</p>
+          {fecha ? (
+            <>
+              <p className="muted" style={{ textTransform: "capitalize", marginBottom: "0.75rem" }}>{nomDia(fecha)}</p>
               {slotsCargando ? (
-                <p className="text-sm text-muted">Cargando…</p>
+                <p className="status-info">Cargando horarios…</p>
               ) : slots.length === 0 ? (
-                <p className="text-sm text-muted">No queda ningún horario libre ese día.</p>
+                <p className="status-info">No queda ningún horario libre ese día.</p>
               ) : (
-                <div className="grid grid-cols-2 gap-2">
+                <div className="slot-grid">
                   {slots.map((s) => (
                     <button
                       key={s.hora}
                       type="button"
                       onClick={() => setSlot(s.hora)}
-                      className={`rounded-xl border px-3 py-2.5 text-sm transition-colors ${
-                        slot === s.hora
-                          ? "border-acento bg-acento text-acento-fg"
-                          : "border-linea hover:bg-chip"
-                      }`}
+                      className={`slot${slot === s.hora ? " sel" : ""}`}
                     >
-                      {s.hora} – {s.fin}
+                      {s.hora}
                     </button>
                   ))}
                 </div>
               )}
-            </div>
-          )}
-
-          <p className="mt-3 text-center text-xs text-muted">
-            Al continuar te bloqueamos el horario por {config.hold_minutos} minutos para completar la reserva.
-          </p>
-        </section>
-      )}
-
-      {/* ── Paso 3: datos ── */}
-      {paso === 3 && servicio && (
-        <section className="mt-6 rounded-2xl bg-card p-5 shadow-sm">
-          <div className="rounded-xl bg-panel px-4 py-3 text-sm text-fg-suave">
-            <span className="serif text-fg">{servicio.nombre}</span> · {fecha} · {slot} –{" "}
-            {slots.find((s) => s.hora === slot)?.fin ?? slot}
-          </div>
-          <div className="mt-4 space-y-3">
-            <Campo etiqueta="Nombre y apellido" valor={nombre} alCambiar={setNombre} />
-            <Campo etiqueta="Teléfono" valor={telefono} alCambiar={setTelefono} tipo="tel" />
-            <Campo etiqueta="Usuario de Instagram (opcional)" valor={instagram} alCambiar={setInstagram} />
-            <Campo etiqueta="Algo que contar (opcional)" valor={notas} alCambiar={setNotas} />
-          </div>
-        </section>
-      )}
-
-      {error && (
-        <p className="mt-4 rounded-xl bg-card px-4 py-3 text-sm text-red-700 shadow-sm">{error}</p>
-      )}
-
-      {/* ── Botones de avance ── */}
-      {paso < 4 && (
-        <div className="mt-6 flex flex-col gap-2">
-          {paso > 1 && (
-            <button type="button" onClick={() => setPaso(paso - 1)} className="text-sm text-muted hover:underline">
-              ← Atrás
-            </button>
-          )}
-          <button
-            type="button"
-            disabled={!puedeSeguir || enviando}
-            onClick={() => {
-              setError("");
-              if (paso === 3) { setPaso(4); return; }
-              setPaso(paso + 1);
-            }}
-            className="rounded-full bg-acento py-3 text-sm tracking-widest text-acento-fg uppercase transition-colors hover:bg-acento-suave disabled:opacity-40"
-          >
-            Continuar →
-          </button>
-        </div>
-      )}
-
-      {/* ── Paso 4: revisar y confirmar ── */}
-      {paso === 4 && servicio && (
-        <div className="mt-6 rounded-2xl bg-card p-5 shadow-sm">
-          <p className="serif text-lg">Confirmá tu reserva</p>
-          <ul className="mt-3 space-y-1 text-sm text-fg-suave">
-            <li><b className="text-fg">{servicio.nombre}</b> ({servicio.duracion_min} min)</li>
-            <li>{fecha ?? ""} · {slot} – {slots.find((s) => s.hora === slot)?.fin ?? slot}</li>
-            <li>{nombre} · {telefono}{instagram ? ` · ${instagram}` : ""}</li>
-            <li className="pt-2">Total: <b className="text-fg">{pesos(servicio.precio)}</b></li>
-            <li>Seña para reservar: <b className="text-fg">{pesos(servicio.sena_monto)}</b></li>
-          </ul>
-          <button
-            type="button"
-            disabled={enviando}
-            onClick={crearTurno}
-            className="mt-5 w-full rounded-full bg-acento py-3 text-sm tracking-widest text-acento-fg uppercase transition-colors hover:bg-acento-suave disabled:opacity-40"
-          >
-            {enviando ? "Reservando…" : "Confirmar reserva"}
-          </button>
-          <button type="button" onClick={() => setPaso(3)} className="mt-3 text-sm text-muted hover:underline">
-            ← Cambiar datos
-          </button>
-        </div>
-      )}
-
-      {/* ── Paso 5: pago de la seña ── */}
-      {paso === 5 && servicio && turnoId && (
-        <div className="mt-6 rounded-2xl bg-card p-5 shadow-sm">
-          <p className="serif text-lg">Último paso: la seña</p>
-          <p className="mt-1 text-sm text-fg-suave">
-            Tu horario quedó bloqueado. Pagá la seña de <b className="text-fg">{pesos(servicio.sena_monto)}</b> para confirmarlo.
-          </p>
-
-          {config.mpActivo && (
-            <>
-              <button
-                type="button"
-                onClick={pagarMP} disabled={enviando}
-                className="mt-5 w-full rounded-full bg-acento py-3 text-sm tracking-widest text-acento-fg uppercase transition-colors hover:bg-acento-suave disabled:opacity-40"
-              >
-                {enviando ? "Abriendo Mercado Pago…" : "Pagar con Mercado Pago"}
-              </button>
-              <p className="mt-2 text-center text-xs text-muted">
-                Se confirma solo cuando entra el pago.
-              </p>
             </>
+          ) : (
+            <p className="status-info mb-5">Primero elegí un día del calendario 👆</p>
           )}
 
-          <div className="mt-5 rounded-xl bg-panel p-4">
-            <p className="text-xs tracking-widest text-muted uppercase">Pagá por transferencia</p>
-            <p className="mt-2 text-sm break-all text-fg-suave">{config.alias_cbu}</p>
-            <button
-              type="button"
-              onClick={elegirTransferencia}
-              disabled={enviando}
-              className="mt-3 w-full rounded-full bg-acento py-2.5 text-sm tracking-widest text-acento-fg uppercase transition-colors hover:bg-acento-suave disabled:opacity-40"
-            >
-              {enviando ? "Guardando…" : "Ya hice la transferencia"}
-            </button>
-            <p className="mt-2 text-xs text-muted">
-              El turno queda en revisión hasta que llega el pago (tiene {config.hold_minutos} minutos más
-              de gracia). Te avisamos por mail.
-            </p>
+          <p className="hold">🔒 Te bloqueamos el horario por {config.hold_minutos} minutos para completar la reserva.</p>
+          <button
+            type="button"
+            className="btn btn-pri btn-block"
+            disabled={!slot}
+            onClick={() => irA("datos")}
+          >
+            CONTINUAR →
+          </button>
+        </>
+      )}
+
+      {/* ── PASO 4: datos ── */}
+      {paso === "datos" && servicio && (
+        <>
+          <h2>Cargá tus datos</h2>
+          <p className="sub">Y te escribimos por WhatsApp con todo lo necesario para pagar la seña y confirmar tu reserva.</p>
+
+          <div className="card p-5" style={{ marginBottom: "1.5rem" }}>
+            <p className="font-semibold" style={{ color: "var(--fg)" }}>{servicio.nombre}</p>
+            <p className="muted mt-1 capitalize">{nomDia(fecha!)} — {slot}</p>
+            <div style={{ borderTop: "1px solid #f0ebe3", marginTop: "1rem", paddingTop: "1rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <p className="lbl" style={{ margin: 0 }}>TOTAL</p>
+              <p style={{ textAlign: "right" }}>
+                <span className="font-semibold" style={{ fontSize: "1.1rem", color: "var(--fg)" }}>{pesos(servicio.precio)}</span>
+                <span className="muted" style={{ display: "block" }}>seña {pesos(servicio.sena_monto)} · {servicio.duracion_min} min</span>
+              </p>
+            </div>
           </div>
 
-          <Link href={`/reserva/${turnoId}`} className="mt-4 block text-center text-sm text-muted hover:underline">
-            Ver el estado de mi reserva →
-          </Link>
-        </div>
-      )}
-    </main>
-  );
-}
+          <div style={{ marginBottom: "1rem" }}>
+            <label className="lbl" htmlFor="nv-name">NOMBRE Y APELLIDO</label>
+            <input id="nv-name" className="input" value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Tu nombre completo" />
+          </div>
+          <div style={{ marginBottom: "1rem" }}>
+            <label className="lbl" htmlFor="nv-tel">TELÉFONO (WHATSAPP)</label>
+            <input id="nv-tel" className="input" type="tel" value={telefono} onChange={(e) => setTelefono(e.target.value)} placeholder="+54 9 11 ..." />
+          </div>
+          <div style={{ marginBottom: "1rem" }}>
+            <label className="lbl" htmlFor="nv-tel2">CONFIRMÁ TU TELÉFONO</label>
+            <input id="nv-tel2" className="input" type="tel" value={telefono2} onChange={(e) => setTelefono2(e.target.value)} placeholder="+54 9 11 ..." />
+          </div>
+          <div style={{ marginBottom: "1rem" }}>
+            <label className="lbl" htmlFor="nv-ig">INSTAGRAM (OPCIONAL)</label>
+            <input id="nv-ig" className="input" value={instagram} onChange={(e) => setInstagram(e.target.value)} placeholder="@tuusuario" />
+          </div>
 
-function Campo({
-  etiqueta, valor, alCambiar, tipo = "text",
-}: { etiqueta: string; valor: string; alCambiar: (v: string) => void; tipo?: string }) {
-  return (
-    <label className="block">
-      <span className="mb-1 block text-xs tracking-widest text-muted uppercase">{etiqueta}</span>
-      <input
-        type={tipo}
-        value={valor}
-        onChange={(e) => alCambiar(e.target.value)}
-        className="w-full rounded-xl border border-linea bg-panel px-4 py-2.5 text-fg outline-none focus:border-acento"
-      />
-    </label>
+          {!datosValidos && (
+            <p style={{ fontSize: 12, color: "#b0644f", marginBottom: "1rem" }}>
+              Revisá los campos: nombre completo, teléfono válido y que ambos números coincidan.
+            </p>
+          )}
+
+          <button type="button" className="btn btn-pri btn-block" disabled={!datosValidos || enviando} onClick={crearTurno}>
+            {enviando ? "Reservando…" : "CONFIRMAR RESERVA"}
+          </button>
+        </>
+      )}
+    </div>
   );
 }

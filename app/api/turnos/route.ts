@@ -117,13 +117,17 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Código público de la reserva (SM-1001, SM-1002, …).
+    const codigo = `SM-${1000 + creado.id}`;
+    await sb().from("turnos").update({ codigo }).eq("id", creado.id);
+
     const emailAdmin = cfg.email_admin;
     await avisar(
       "RESERVA_RECIBIDA",
       emailAdmin || null,
-      `Nueva reserva #${creado.id}: ${servicio.nombre} — ${fecha} ${hora}`,
+      `Nueva reserva ${codigo}: ${servicio.nombre} — ${fecha} ${hora}`,
       [
-        `Reserva #${creado.id}`,
+        `Reserva ${codigo}`,
         `Servicio: ${servicio.nombre} (${servicio.duracion_min} min)`,
         `Fecha y hora: ${fecha} de ${elegido.hora} a ${elegido.fin}`,
         `Clienta: ${nombre} · Tel: ${telefono}${b.instagram ? ` · IG: ${b.instagram}` : ""}`,
@@ -132,7 +136,7 @@ export async function POST(req: NextRequest) {
       ].filter(Boolean).join("\n"),
     );
 
-    return NextResponse.json({ id: creado.id, fin: elegido.fin });
+    return NextResponse.json({ id: creado.id, codigo, fin: elegido.fin });
   } catch (e) {
     return NextResponse.json(
       { error: e instanceof Error ? e.message : "Error interno." },
