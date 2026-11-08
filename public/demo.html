@@ -1,0 +1,1160 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Sofy MakeUp · Maquilladora profesional. Reservá tu turno online.">
+<title>Sofy MakeUp · Maquillaje profesional</title>
+<style>
+  :root { --pri:#4B3621; --ink:#2A1B12; --bg:#FAF8F5; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  html { -webkit-text-size-adjust:100%; }
+  body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif; background:var(--bg); color:#1A1512; min-height:100vh; }
+  img, svg { display:block; max-width:100%; }
+  button { font:inherit; background:none; border:none; cursor:pointer; color:inherit; }
+  a { color:inherit; text-decoration:none; }
+  .wrap { max-width:68rem; margin:0 auto; padding:0 1.25rem; }
+  .display { font-family: Georgia, "Times New Roman", serif; }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(10px);} to { opacity:1; transform:none;} }
+  .fade-in { animation: fadeUp .45s ease both; }
+
+  /* header */
+  header.top { position:sticky; top:0; z-index:40; backdrop-filter:blur(8px); background:rgba(250,248,245,.95); border-bottom:1px solid #E9E2DA; }
+  .topbar { display:flex; align-items:center; justify-content:space-between; height:4rem; }
+  .logo { text-align:left; line-height:1; }
+  .logo .n { font-family:Georgia,serif; font-style:italic; font-size:1.5rem; color:var(--ink); }
+  .logo .s { margin-left:.5rem; font-size:11px; letter-spacing:.35em; font-weight:600; color:var(--pri); }
+  .topbtns { display:flex; gap:.5rem; align-items:center; }
+  .nav { display:flex; gap:1.4rem; overflow-x:auto; padding-bottom:.75rem; font-size:11px; letter-spacing:.18em; font-weight:600; scrollbar-width:none; }
+  .nav::-webkit-scrollbar { display:none; }
+  .nav button { white-space:nowrap; padding-bottom:.25rem; border-bottom:2px solid transparent; color:#8A7E73; transition:color .15s; }
+  .nav button:hover { color:#1A1512; }
+  .nav button.on { color:#1A1512; border-color:#1A1512; }
+  .nav button.editing { color:#1A1512; border-color:var(--pri); }
+
+  /* botones */
+  .btn { display:inline-flex; align-items:center; justify-content:center; gap:.5rem; border-radius:999px; font-size:12px; letter-spacing:.2em; font-weight:600; padding:.85rem 1.75rem; transition:filter .15s, border-color .15s, opacity .15s; }
+  .btn-pri { background:var(--pri); color:#fff; }
+  .btn-pri:hover:not(:disabled) { filter:brightness(.86); }
+  .btn-pri:disabled { background:#D8CFC5; cursor:not-allowed; }
+  .btn-out { border:1px solid #D8CFC5; color:#3B322A; }
+  .btn-out:hover:not(:disabled) { border-color:#1A1512; }
+  .btn-sm { padding:.55rem 1.1rem; font-size:11px; letter-spacing:.15em; }
+  .btn-block { width:100%; }
+  .btn.on-edit { background:var(--pri); color:#fff; }
+
+  /* utilidades */
+  .lbl { font-size:11px; letter-spacing:.2em; font-weight:600; color:#5C5248; text-transform:uppercase; display:block; margin-bottom:.4rem; }
+  .card { background:#fff; border:1px solid #EEE8E0; border-radius:1rem; }
+  .input { width:100%; background:#fff; border:1px solid #E4DCD2; border-radius:.75rem; padding:.7rem .9rem; font-size:14px; outline:none; color:#1A1512; transition:border-color .15s; font-family:inherit; }
+  .input:focus { border-color:var(--pri); }
+  .input::placeholder { color:#C4B9AC; }
+  textarea.input { min-height:80px; resize:vertical; }
+  .muted { color:#8A7E73; font-size:12px; }
+  .body-txt { color:#5C5248; line-height:1.7; }
+  .row { display:flex; flex-wrap:wrap; gap:.75rem; align-items:flex-start; }
+  .grow { flex:1 1 180px; }
+  .grid { display:grid; gap:.75rem; }
+  .g2 { grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); }
+  .stack > * + * { margin-top:.625rem; }
+  .status-ok { background:#EAF3EC; color:#3E7050; border-radius:.75rem; padding:.75rem 1rem; font-size:13px; }
+  .status-err { background:#F6E7E1; color:#A2543F; border-radius:.75rem; padding:.75rem 1rem; font-size:13px; }
+  .status-info { background:#F1ECE6; color:#5C5248; border-radius:.75rem; padding:.75rem 1rem; font-size:13px; }
+
+  /* hero */
+  .hero { display:grid; grid-template-columns:1fr; gap:2rem; padding:2.5rem 0 3rem; border-bottom:1px solid #E9E2DA; }
+  @media(min-width:900px){ .hero { grid-template-columns:1fr 1fr; align-items:center; } }
+  .hero h1 { font-family:Georgia,serif; font-size:3rem; line-height:1.05; color:var(--ink); margin:0 0 1rem; }
+  @media(min-width:640px){ .hero h1 { font-size:3.6rem; } }
+  .kicker { font-size:11px; letter-spacing:.3em; color:#8A7E73; margin-bottom:.75rem; }
+  .hero-img { position:relative; border-radius:1rem; overflow:hidden; aspect-ratio:4/3; box-shadow:0 12px 40px rgba(75,54,33,.15); }
+  .hero-img img, .hero-img svg { width:100%; height:100%; object-fit:cover; }
+  .img-tag { position:absolute; bottom:1rem; left:1rem; background:rgba(255,255,255,.9); padding:.5rem 1rem; border-radius:999px; font-size:10px; letter-spacing:.25em; font-weight:600; color:var(--pri); }
+
+  /* servicios */
+  .sect { padding:2.5rem 0; }
+  .sect h2 { font-family:Georgia,serif; font-size:1.9rem; color:var(--ink); }
+  .sect-head { display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:1.5rem; }
+  .svc-card { display:flex; justify-content:space-between; align-items:center; background:#fff; border:1px solid #EEE8E0; border-radius:1rem; padding:1.15rem 1.5rem; text-align:left; transition:border-color .15s, box-shadow .15s; width:100%; }
+  .svc-card:hover { border-color:#D8CFC5; box-shadow:0 4px 12px rgba(26,21,18,.06); }
+  .svc-card .nm { font-weight:600; font-size:1.05rem; color:var(--ink); }
+  .svc-card .tg { font-size:13px; color:#8A7E73; margin-top:.15rem; }
+  .svc-card .rs { display:inline-flex; align-items:center; gap:.4rem; font-size:11px; letter-spacing:.2em; font-weight:600; color:var(--pri); margin-top:.25rem; }
+  .arrow { width:16px; height:16px; }
+
+  /* trabajos */
+  .works { display:grid; grid-template-columns:repeat(2,1fr); gap:1rem; }
+  @media(min-width:900px){ .works { grid-template-columns:repeat(3,1fr); } }
+  .work { position:relative; border-radius:1rem; overflow:hidden; aspect-ratio:1; background:#EEE8E0; box-shadow:0 1px 4px rgba(26,21,18,.06); }
+  .work img, .work svg { width:100%; height:100%; object-fit:cover; }
+  .play { position:absolute; inset:0; margin:auto; width:44px; height:44px; border-radius:50%; border:1px solid rgba(255,255,255,.8); background:rgba(255,255,255,.25); backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center; color:#fff; transition:transform .2s; }
+  .work:hover .play { transform:scale(1.1); }
+  .work figcaption { position:absolute; bottom:0; left:0; right:0; padding:.75rem; background:linear-gradient(to top, rgba(0,0,0,.55), transparent); color:#fff; }
+  .work figcaption .l { font-weight:600; font-size:14px; }
+  .work figcaption .s { font-size:11px; opacity:.85; }
+
+  /* sobre mí */
+  .about { display:grid; grid-template-columns:1fr; gap:2.5rem; padding-top:2.5rem; }
+  @media(min-width:900px){ .about { grid-template-columns:320px 1fr; align-items:start; } }
+  .about-photo { border-radius:1rem; overflow:hidden; aspect-ratio:3/4; box-shadow:0 12px 40px rgba(75,54,33,.15); }
+  .about-photo img, .about-photo svg { width:100%; height:100%; object-fit:cover; }
+  .stats { display:grid; grid-template-columns:repeat(3,1fr); gap:.75rem; margin:2rem 0; }
+  .stat { text-align:center; padding:1.25rem; }
+  .stat .n { font-family:Georgia,serif; font-size:1.9rem; color:var(--pri); }
+  .stat .l { font-size:11px; letter-spacing:.15em; color:#8A7E73; margin-top:.25rem; text-transform:uppercase; }
+
+  /* contacto */
+  .ct-cards { display:grid; gap:.75rem; grid-template-columns:1fr; }
+  @media(min-width:800px){ .ct-cards { grid-template-columns:repeat(3,1fr); } }
+  .ct { background:#F1ECE6; border-radius:1rem; padding:1.5rem; display:flex; flex-direction:column; gap:.75rem; transition:background .15s; }
+  .ct:hover { background:#E9E2DA; }
+  .ct .ic { width:48px; height:48px; border-radius:50%; border:1px solid #D8CFC5; display:flex; align-items:center; justify-content:center; color:var(--pri); }
+  .ct .lb { font-size:12px; letter-spacing:.25em; font-weight:600; color:#1A1512; }
+  .ct .dt { color:#5C5248; margin-top:.25rem; }
+
+  /* booking */
+  .bk { max-width:28rem; margin:0 auto; padding-top:1.5rem; }
+  .bk h2 { font-family:Georgia,serif; font-size:1.9rem; color:var(--ink); }
+  .bk .sub { font-size:13px; color:#8A7E73; margin:.25rem 0 1.5rem; }
+  .progress { display:flex; gap:.4rem; margin:1rem 0 1.5rem; }
+  .progress > div { flex:1; }
+  .progress .bar { height:4px; border-radius:999px; background:#E4DCD2; }
+  .progress .bar.on { background:var(--pri); }
+  .progress .cap { margin-top:.4rem; font-size:10px; letter-spacing:.05em; color:#B4A99E; }
+  .progress .cap.on { color:#1A1512; font-weight:600; }
+  .bk-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:.5rem; }
+  .backlink { display:inline-flex; align-items:center; gap:.35rem; font-size:12px; color:#8A7E73; }
+  .backlink:hover { color:#1A1512; }
+  .steplabel { font-size:11px; letter-spacing:.25em; color:#8A7E73; }
+  .opt { display:flex; align-items:center; gap:1rem; width:100%; background:#fff; border:1px solid #EEE8E0; border-radius:1rem; padding:1rem 1.25rem; text-align:left; transition:border-color .15s; }
+  .opt:hover { border-color:#CBBFAF; }
+  .opt.sel { border-color:var(--pri); box-shadow:0 1px 6px rgba(26,21,18,.08); }
+  .radio { width:16px; height:16px; border-radius:50%; border:5px solid #D8CFC5; flex-shrink:0; }
+  .opt.sel .radio { border-color:var(--pri); }
+  .opt .nm { font-weight:600; color:var(--ink); }
+  .opt .meta { font-size:12px; color:#8A7E73; margin-top:.15rem; }
+
+  .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:.25rem; }
+  .cal-grid .dow { text-align:center; font-size:10px; letter-spacing:.15em; color:#B4A99E; padding:.25rem 0; }
+  .cal-day { aspect-ratio:1; border-radius:50%; font-size:13px; display:flex; align-items:center; justify-content:center; color:#3B322A; width:100%; }
+  .cal-day:hover:not(:disabled) { background:#E9E2DA; }
+  .cal-day:disabled { color:#E0D8CD; cursor:default; }
+  .cal-day.sel { background:var(--pri); color:#fff; font-weight:600; }
+  .slot-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:.5rem; }
+  .slot { padding:.65rem; font-size:13px; border-radius:.5rem; border:1px solid #E4DCD2; background:#fff; color:#3B322A; transition:border-color .15s; }
+  .slot:hover:not(:disabled) { border-color:#B4A99E; }
+  .slot.sel { background:var(--pri); color:#fff; border-color:var(--pri); font-weight:600; }
+  .slot:disabled { background:#F3EEE8; color:#D4CBC0; border-color:transparent; text-decoration:line-through; cursor:default; }
+  .hold { font-size:12px; color:#8A7E73; margin:1.25rem 0; }
+
+  /* reservas */
+  .res-card { padding:1.25rem; }
+  .res-card.cancelled { opacity:.6; }
+  .res-top { display:flex; justify-content:space-between; align-items:flex-start; }
+  .badge { font-size:10px; letter-spacing:.2em; font-weight:600; padding:.25rem .75rem; border-radius:999px; }
+  .badge.ok { background:#EAF3EC; color:#3E7050; }
+  .badge.no { background:#F6E7E1; color:#A2543F; }
+  .res-meta { border-top:1px solid #F0EBE3; margin-top:1rem; padding-top:.75rem; display:flex; flex-wrap:wrap; gap:.5rem 2rem; font-size:12px; color:#8A7E73; }
+  .res-actions { margin-top:1rem; display:flex; gap:1.25rem; align-items:center; }
+  .link-danger { font-size:11px; letter-spacing:.15em; font-weight:600; color:#B0644F; display:inline-flex; align-items:center; gap:.3rem; }
+  .link-danger:hover { text-decoration:underline; }
+  .link-danger.armed { color:#A2543F; }
+  .link-wa { font-size:11px; letter-spacing:.15em; font-weight:600; color:#3E7050; display:inline-flex; align-items:center; gap:.35rem; }
+  .link-wa:hover { text-decoration:underline; }
+
+  /* edición */
+  .ed-head { display:flex; flex-wrap:wrap; justify-content:space-between; gap:.75rem; margin-bottom:1.5rem; }
+  .ed-tabs { display:flex; gap:.5rem; overflow-x:auto; padding-bottom:1rem; margin-bottom:.5rem; scrollbar-width:none; }
+  .ed-tabs::-webkit-scrollbar { display:none; }
+  .ed-tab { white-space:nowrap; font-size:11px; letter-spacing:.12em; font-weight:600; padding:.5rem 1rem; border-radius:999px; border:1px solid #E4DCD2; color:#5C5248; }
+  .ed-tab:hover { border-color:#B4A99E; }
+  .ed-tab.on { background:var(--pri); color:#fff; border-color:var(--pri); }
+  .ed-grid { display:grid; gap:1.5rem; grid-template-columns:1fr; }
+  @media(min-width:900px){ .ed-grid { grid-template-columns:1fr 1fr; align-items:start; } }
+  .ed-cat { padding:1.25rem; }
+  .ed-svc { background:#FAF8F5; border:1px solid #F0EBE3; border-radius:.75rem; padding:1rem; margin-top:.75rem; }
+  .mini-label { font-size:11px; color:#8A7E73; }
+  .photo-box { position:relative; border-radius:1rem; overflow:hidden; border:1px solid #E4DCD2; background:#F3EEE8; width:100%; }
+  .photo-box img, .photo-box svg { width:100%; height:100%; object-fit:cover; position:absolute; inset:0; }
+  .photo-overlay { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0); transition:background .15s; cursor:pointer; }
+  .photo-overlay:hover { background:rgba(0,0,0,.3); }
+  .photo-overlay span { background:rgba(255,255,255,.9); color:#2A1B12; font-size:11px; letter-spacing:.15em; font-weight:600; padding:.5rem 1rem; border-radius:999px; display:inline-flex; align-items:center; gap:.5rem; }
+  .del-photo { font-size:11px; color:#B0644F; margin-top:.35rem; display:inline-block; }
+  .del-photo:hover { text-decoration:underline; }
+  .meter { height:8px; border-radius:999px; background:#EDE7DF; overflow:hidden; margin:.75rem 0 .25rem; }
+  .meter > div { height:100%; border-radius:999px; background:var(--pri); }
+  .swatches { display:flex; flex-wrap:wrap; gap:.75rem; }
+  .swatch { display:flex; align-items:center; gap:.5rem; border:1px solid #E4DCD2; border-radius:999px; padding:.5rem 1rem; font-size:11px; font-weight:600; transition:border-color .15s; }
+  .swatch:hover { border-color:#1A1512; }
+  .swatch .p { width:20px; height:20px; border-radius:50%; }
+  .swatch .b { width:16px; height:16px; border-radius:50%; border:1px solid #E4DCD2; }
+  .mono { font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:12px; }
+
+  /* fab whatsapp */
+  .fab { position:fixed; bottom:1.25rem; right:1.25rem; z-index:50; width:56px; height:56px; border-radius:50%; background:#25D366; display:flex; align-items:center; justify-content:center; color:#fff; box-shadow:0 8px 24px rgba(0,0,0,.2); transition:background .15s, transform .15s; }
+  .fab:hover { background:#1FB457; transform:scale(1.05); }
+  main { padding-bottom:7rem; }
+  .chk { display:flex; align-items:center; gap:.75rem; margin-bottom:1rem; cursor:pointer; font-size:13px; color:#5C5248; }
+  .chk input { width:16px; height:16px; accent-color:var(--pri); }
+  .only-desktop { display:none; }
+  @media(min-width:700px){ .only-desktop { display:inline-flex; } }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+"use strict";
+
+/* ============ CONTENIDO POR DEFECTO (todo editable) ============ */
+
+var MESES = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+var DIAS = ["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
+var SLOTS = ["09:00","09:45","10:30","11:15","12:00","13:00","14:00","14:45","15:30","16:15","17:00","17:45","18:30","19:15"];
+var KEY_SITE = "sofy-site-v1";
+var KEY_RES = "sofy-makeup-reservas-v1";
+
+var DEFAULT_SITE = {
+  brand: "Sofy",
+  brandSuffix: "MAKEUP",
+  hero: {
+    kicker: "MAQUILLADORA PROFESIONAL · BUENOS AIRES",
+    title: "Belleza que",
+    titleAccent: "se siente propia",
+    text: "Looks de novia, social y quinceañeras. Cejas y pestañas que realzan tu mirada. Reservá tu turno online en menos de un minuto.",
+    photo: null,
+    photoTag: "LOOK NOVIA · 2026"
+  },
+  about: {
+    title: "Hola, soy Sofy",
+    photo: null,
+    p1: "Llevo más de 8 años maquillando rostros reales: novias nerviosas, quinceañeras ansiosas, madrinas elegantes y egresadas que quieren durar doce horas en la pista.",
+    p2: "Mi estilo es limpio y sofisticado: piel luminosa, mirada protagonista y labios que se sienten propios. Trabajo con productos de alta gama y mi estudio está en Palermo, con la mejor luz natural para que veas tu look tal como es.",
+    stats: [ { n: "+150", l: "novias" }, { n: "+800", l: "looks sociales" }, { n: "8", l: "años de oficio" } ]
+  },
+  contact: {
+    wa: "5491123456789", waLabel: "+54 9 11 2345-6789", ig: "sofy.makeup",
+    email: "hola@sofymakeup.com", addr: "Gorriti 4521, Palermo · CABA",
+    hours: "Lunes a sábados de 9 a 19 h", note: "Con turno previo"
+  },
+  works: [
+    { id:"w1", label:"Social", sub:"Look glow · evento en Palermo", hues:["#3E2B22","#8A5A44","#DDB9A3"], photo:null },
+    { id:"w2", label:"Novias", sub:"Look natural · civil en San Isidro", hues:["#2B2320","#6E4A3A","#C9A08C"], photo:null },
+    { id:"w3", label:"Recreando: Madelyn Cline", sub:"Editorial eyes", hues:["#40241E","#96543F","#E3B49B"], photo:null },
+    { id:"w4", label:"Quinceañeras", sub:"Luminosa · fiesta en Recoleta", hues:["#241E1B","#54423A","#B59A88"], photo:null },
+    { id:"w5", label:"Editorial", sub:"Bronce & gloss", hues:["#2B2320","#6E4A3A","#C9A08C"], photo:null },
+    { id:"w6", label:"Egresadas", sub:"Smokey suave · 12 h de baile", hues:["#3E2B22","#8A5A44","#DDB9A3"], photo:null }
+  ],
+  catalog: [
+    { id:"maquillaje", name:"Maquillaje", tag:"Looks impecables para cada ocasión", services:[
+      { id:"m-social", name:"Maquillaje social", dur:60, price:22000, desc:"Make up de larga duración para eventos, cenas y salidas. Incluye preparación de piel, ojos según tu look y labios. Pestañas de regalo." },
+      { id:"m-novia", name:"Maquillaje de novia", dur:90, price:48000, desc:"El look más importante de tu vida. Incluye prueba previa, maquillaje de larga duración HD, pestañas a medida y retoque el día del evento." },
+      { id:"m-quince", name:"Maquillaje quinceañera", dur:75, price:32000, desc:"Maquillaje fresco y luminoso pensado para fotos y pista de baile. Pestañas a medida incluidas." },
+      { id:"m-madrina", name:"Maquillaje madrinas", dur:50, price:20000, desc:"Elegancia y durabilidad para acompañar a los novios sin robar protagonismo. Pestañas de regalo." },
+      { id:"m-civil", name:"Novias por civil", dur:45, price:26000, desc:"Maquillaje natural y sofisticado para bodas íntimas y civil. Pestañas de regalo." },
+      { id:"m-egreso", name:"Maquillaje egresadas", dur:60, price:24000, desc:"Look a prueba de baile: sellado total, ojos elegidos a medida y labios de larga duración." },
+      { id:"m-prueba", name:"Pruebas", dur:90, price:15000, desc:"Sesión de prueba para novias, quinceañeras o quien tenga un evento importante: probamos distintos looks hasta encontrar el perfecto." }
+    ]},
+    { id:"cejas", name:"Cejas", tag:"Diseño y arquitectura de tu mirada", services:[
+      { id:"c-perfil", name:"Perfilado de cejas con cera", dur:20, price:6000, desc:"Limpieza y diseño con cera para un rostro más definido." },
+      { id:"c-diseno", name:"Diseño de cejas", dur:20, price:5500, desc:"Estudio de tu rostro para encontrar la forma ideal de tus cejas." },
+      { id:"c-lam", name:"Laminado de cejas", dur:45, price:12000, desc:"Efecto peine upward: cejas más pobladas, fijadas y ordenadas por semanas." },
+      { id:"c-henna", name:"Baño de henna", dur:30, price:8000, desc:"Color y volumen temporal con henna vegetal, ideal para rellenar huecos." },
+      { id:"c-brow", name:"Brow lamination + tinte", dur:50, price:14000, desc:"El combo favorito: lamination fija, el tinte densifica." },
+      { id:"c-retoque", name:"Retoque de diseño", dur:15, price:4500, desc:"Mantenimiento quincenal de tu diseño habitual." },
+      { id:"c-pinza", name:"Depilación con pinza", dur:20, price:5000, desc:"Perfilado fino y delicado pelito a pelito." },
+      { id:"c-tinte", name:"Tinte de cejas", dur:20, price:6500, desc:"Color a medida para intensificar tu mirada." },
+      { id:"c-mapping", name:"Mapping + cera + tinte", dur:60, price:16000, desc:"Sesión completa de arquitectura de cejas con mapa personalizado." }
+    ]},
+    { id:"pestanas", name:"Pestañas", tag:"Miradas que hablan solas", services:[
+      { id:"p-clasica", name:"Extensiones clásicas", dur:90, price:16000, desc:"Una extensión por pestaña natural: efecto rímel perfecto, natural y elegante." },
+      { id:"p-ruso", name:"Volumen ruso", dur:120, price:22000, desc:"Abanicos hechos a mano para un efecto intenso y glamoroso." },
+      { id:"p-lifting", name:"Lifting de pestañas", dur:45, price:11000, desc:"Curva y tinta tu pestaña natural sin extensiones, con efecto durable." }
+    ]},
+    { id:"promo", name:"Promo Combo", tag:"Combos de belleza al mejor precio", services:[
+      { id:"x-makecejas", name:"Make up + Perfilado de cejas", dur:80, price:25000, desc:"Mirada y rostro impecables en una sola visita." },
+      { id:"x-makepest", name:"Make up + Lifting de pestañas", dur:105, price:30000, desc:"Ojos listos para el evento y para las semanas después." },
+      { id:"x-novia", name:"Combo Novia: prueba + make", dur:180, price:58000, desc:"Prueba previa + maquillaje del día con pestañas incluidas. El combo más pedido." }
+    ]},
+    { id:"asesoramientos", name:"Asesoramientos", tag:"Aprendé a realzar tu belleza", services:[
+      { id:"a-beauty", name:"Asesoramiento de belleza personalizado", dur:60, price:12000, desc:"Análisis de piel, paleta de colores, rutina y productos indicados para vos. Salís con una guía propia." }
+    ]},
+    { id:"cursos", name:"Cursos", tag:"Formación profesional", services:[
+      { id:"k-auto", name:"Curso de automaquillaje", dur:180, price:45000, desc:"Aprendé a maquillarte como profesional: bases, ojos, correctores y tu rutina ideal. Incluye kit de inicio." },
+      { id:"k-pro", name:"Curso intensivo profesional", dur:480, price:120000, desc:"Formación completa: pieles, social, novias, tendencias y práctica con modelo. Certificación incluida." }
+    ]}
+  ],
+  theme: { primary:"#4B3621", ink:"#2A1B12", bg:"#FAF8F5" },
+  sync: { endpoint:"", autoSync:false }
+};
+
+var SEED = [
+  { code:"SM-1024", cat:"Maquillaje", service:"Maquillaje de novia", dateKey:"2026-11-21", time:"14:00", name:"Camila Rossi", phone:"1155551234", ig:"@camilarossi", total:48000, sena:14400, status:"Confirmada" },
+  { code:"SM-1042", cat:"Maquillaje", service:"Maquillaje social", dateKey:"2026-12-05", time:"10:30", name:"Valentina Ruiz", phone:"1155557788", ig:"@valen.ruiz", total:22000, sena:6600, status:"Confirmada" }
+];
+
+/* ============ HELPERS ============ */
+
+var _escMap = { "&":"&amp;", "<":"&lt;", ">":"&gt;", "\"":"&quot;", "'":"&#39;" };
+function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){ return _escMap[c]; }); }
+function money(n) { return "$" + (Number(n) || 0).toLocaleString("es-AR"); }
+function fmtDur(d) { d = Number(d)||0; return (d % 60 === 0 && d >= 120) ? (d/60)+" h" : d+" min"; }
+function senaOf(p) { return Math.round(((Number(p)||0) * 0.3) / 100) * 100; }
+function uid() { return Math.random().toString(36).slice(2, 9); }
+function clone(x) { return JSON.parse(JSON.stringify(x)); }
+function dateKeyOf(y, m, d) { return y + "-" + String(m+1).padStart(2,"0") + "-" + String(d).padStart(2,"0"); }
+function labelFromKey(key) {
+  var p = key.split("-").map(Number);
+  var dt = new Date(p[0], p[1]-1, p[2]);
+  return DIAS[dt.getDay()] + ", " + p[2] + " de " + MESES[p[1]-1] + " de " + p[0];
+}
+function shortLabel(key) {
+  var p = key.split("-").map(Number);
+  return p[2] + " " + MESES[p[1]-1].slice(0,3) + " " + p[0];
+}
+function busy(dateKey, slot) {
+  var h = 0, s = dateKey + slot;
+  for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) % 997;
+  return h % 10 < 3;
+}
+
+/* ============ ESTADO ============ */
+
+function loadSite() {
+  try {
+    var raw = localStorage.getItem(KEY_SITE);
+    if (raw) {
+      var p = JSON.parse(raw);
+      return Object.assign(clone(DEFAULT_SITE), p, { sync: Object.assign({}, DEFAULT_SITE.sync, p.sync || {}) });
+    }
+    localStorage.setItem(KEY_SITE, JSON.stringify(DEFAULT_SITE));
+  } catch (e) {}
+  return clone(DEFAULT_SITE);
+}
+function loadRes() {
+  try {
+    var raw = localStorage.getItem(KEY_RES);
+    if (raw) return JSON.parse(raw);
+    localStorage.setItem(KEY_RES, JSON.stringify(SEED));
+  } catch (e) {}
+  return clone(SEED);
+}
+function persist() {
+  try {
+    localStorage.setItem(KEY_SITE, JSON.stringify(S.site));
+    localStorage.setItem(KEY_RES, JSON.stringify(S.rows));
+  } catch (e) {}
+}
+
+var S = {
+  site: loadSite(),
+  rows: loadRes(),
+  view: "servicios",
+  editTab: "portada",
+  book: null,
+  calOff: 0,
+  arm: null,
+  syncStatus: "",
+  syncBusy: false,
+  paste: ""
+};
+
+/* ============ BACKEND (API REST) ============ */
+
+function apiBase() { return (S.site.sync.endpoint || "").replace(/\/$/, ""); }
+function apiPull(ep) {
+  var base = ep.replace(/\/$/, "");
+  return fetch(base + "/config", { headers: { Accept: "application/json" } }).then(function(r) {
+    if (!r.ok) throw new Error("GET /config → " + r.status);
+    return r.json();
+  }).then(function(config) {
+    return fetch(base + "/reservas", { headers: { Accept: "application/json" } }).then(function(r) {
+      if (!r.ok) return { config: config, reservas: null };
+      return r.json().then(function(res) { return { config: config, reservas: res }; }, function() { return { config: config, reservas: null }; });
+    });
+  });
+}
+function apiPush(ep, site, rows) {
+  var base = ep.replace(/\/$/, "");
+  return Promise.all([
+    fetch(base + "/config", { method:"PUT", headers:{ "Content-Type":"application/json" }, body: JSON.stringify(site) }),
+    fetch(base + "/reservas", { method:"PUT", headers:{ "Content-Type":"application/json" }, body: JSON.stringify(rows) })
+  ]).then(function(rs) {
+    if (!rs[0].ok || !rs[1].ok) throw new Error("PUT → " + rs[0].status + " / " + rs[1].status);
+  });
+}
+function apiPushReserva(row) {
+  var base = apiBase();
+  if (!base) return;
+  try { fetch(base + "/reservas", { method:"POST", headers:{ "Content-Type":"application/json" }, body: JSON.stringify(row) }).catch(function(){}); } catch (e) {}
+}
+
+/* ============ PATHS (binding) ============ */
+
+function getPath(path) {
+  var parts = path.split("."), cur = S;
+  for (var i = 0; i < parts.length; i++) {
+    var k = parts[i];
+    cur = cur[k];
+    if (cur == null) return undefined;
+  }
+  return cur;
+}
+function setPath(path, value) {
+  var parts = path.split("."), cur = S;
+  for (var i = 0; i < parts.length - 1; i++) cur = cur[parts[i]];
+  var last = parts[parts.length - 1];
+  var isNum = /^-?\d+$/.test(last);
+  if (isNum) cur[Number(last)] = value; else cur[last] = value;
+}
+
+/* ============ ARTE SVG DE FONDO ============ */
+
+var _svgSeq = 0;
+function artSVG(id, hues) {
+  _svgSeq++;
+  var gid = "grad-" + id + "-" + _svgSeq;
+  var sid = "skin-" + id + "-" + _svgSeq;
+  return '<svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice">' +
+    '<defs>' +
+    '<linearGradient id="' + gid + '" x1="0" y1="0" x2="1" y2="1">' +
+    '<stop offset="0" stop-color="' + hues[0] + '"/><stop offset="0.55" stop-color="' + hues[1] + '"/><stop offset="1" stop-color="' + hues[2] + '"/>' +
+    '</linearGradient>' +
+    '<radialGradient id="' + sid + '" cx="0.5" cy="0.42" r="0.55">' +
+    '<stop offset="0" stop-color="#FFF3E9" stop-opacity="0.9"/><stop offset="1" stop-color="#FFF3E9" stop-opacity="0"/>' +
+    '</radialGradient>' +
+    '</defs>' +
+    '<rect width="400" height="300" fill="url(#' + gid + ')"/>' +
+    '<ellipse cx="200" cy="150" rx="95" ry="120" fill="url(#' + sid + ')"/>' +
+    '<ellipse cx="200" cy="150" rx="72" ry="92" fill="none" stroke="#2A1B12" stroke-opacity="0.55" stroke-width="1.4"/>' +
+    '<path d="M155 130 q12 -11 30 -2 q5 4 12 2" fill="none" stroke="#2A1B12" stroke-width="2" stroke-linecap="round"/>' +
+    '<path d="M245 130 q-12 -11 -30 -2 q-5 4 -12 2" fill="none" stroke="#2A1B12" stroke-width="2" stroke-linecap="round"/>' +
+    '<path d="M150 128 q4 -8 12 -9 M146 130 q6 -12 18 -13" fill="none" stroke="#2A1B12" stroke-width="1.4" stroke-linecap="round"/>' +
+    '<path d="M250 128 q-4 -8 -12 -9 M254 130 q-6 -12 -18 -13" fill="none" stroke="#2A1B12" stroke-width="1.4" stroke-linecap="round"/>' +
+    '<circle cx="170" cy="133" r="3" fill="#2A1B12"/><circle cx="230" cy="133" r="3" fill="#2A1B12"/>' +
+    '<path d="M162 121 l-6 -8 M178 117 l-2 -9 M194 118 l3 -9 M238 121 l6 -8 M222 117 l2 -9 M206 118 l-3 -9" stroke="#2A1B12" stroke-width="1.3" stroke-linecap="round"/>' +
+    '<path d="M200 145 v18 q-4 4 -2 6" fill="none" stroke="#2A1B12" stroke-width="1.4" stroke-linecap="round"/>' +
+    '<path d="M182 186 q8 -8 18 -4 q10 -4 18 4 q-10 10 -18 8 q-8 2 -18 -8z" fill="#7A2E3A" fill-opacity="0.85" stroke="#2A1B12" stroke-width="1.2"/>' +
+    '<circle cx="158" cy="160" r="14" fill="#C4685F" fill-opacity="0.25"/><circle cx="242" cy="160" r="14" fill="#C4685F" fill-opacity="0.25"/>' +
+    '<path d="M300 40 l30 260" stroke="#1E130C" stroke-opacity="0.25" stroke-width="10" stroke-linecap="round"/>' +
+    '<path d="M330 250 q10 18 0 30 q-10 -12 0 -30" fill="#3B2A1E"/>' +
+    '<path d="M80 30 l-20 250" stroke="#1E130C" stroke-opacity="0.18" stroke-width="8" stroke-linecap="round"/>' +
+    '<text x="200" y="278" text-anchor="middle" font-family="Georgia, serif" font-style="italic" font-size="13" fill="#2A1B12" fill-opacity="0.5">sofy makeup</text>' +
+    '</svg>';
+}
+
+/* ============ ICONOS ============ */
+
+var IC = {
+  arrow: '<svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>',
+  back: '<svg class="arrow" style="width:15px;height:15px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>',
+  check: '<svg style="width:36px;height:36px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>',
+  clock: '<svg style="width:14px;height:14px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+  pin: '<svg style="width:16px;height:16px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-5.5-7-11a7 7 0 0 1 14 0c0 5.5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>',
+  wa: '<svg style="width:28px;height:28px" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5.1-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1-.2.2-.7.8-.8.9-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.6-1.2.1-.2 0-.4 0-.5L9.5 6.7c-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.9.9-1.1 2.2-.2 3.9 1.2 2.1 2.9 3.7 5.2 4.8 1.9.9 2.6.8 3.4.6.6-.1 1.4-.6 1.6-1.2.2-.6.2-1.1.1-1.2-.1-.1-.3-.2-.5-.3z"/></svg>',
+  waS: '<svg style="width:14px;height:14px" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5.1-1.3A10 10 0 1 0 12 2zm4.5 12.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8.9c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.6-1.2.1-.2 0-.4 0-.5L9.5 6.7c-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.9.9-1.1 2.2-.2 3.9 1.2 2.1 2.9 3.7 5.2 4.8 1.9.9 2.6.8 3.4.6.6-.1 1.4-.6 1.6-1.2.2-.6.2-1.1.1-1.2-.1-.1-.3-.2-.5-.3z"/></svg>',
+  ig: '<svg style="width:20px;height:20px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="0.6" fill="currentColor" stroke="none"/></svg>',
+  mail: '<svg style="width:20px;height:20px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>',
+  cal: '<svg style="width:16px;height:16px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>',
+  edit: '<svg style="width:14px;height:14px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></svg>',
+  trash: '<svg style="width:13px;height:13px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>',
+  cam: '<svg style="width:16px;height:16px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8a2 2 0 0 1 2-2h1.5L8 4h8l1.5 2H19a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><circle cx="12" cy="13" r="3.5"/></svg>',
+  play: '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>'
+};
+
+/* ============ PLANTILLAS ============ */
+
+var app = document.getElementById("app");
+
+function waLink() { return "https://wa.me/" + (S.site.contact.wa || "").replace(/\D/g, ""); }
+
+function renderHeader() {
+  var nav = [
+    ["servicios","SERVICIOS"], ["trabajos","TRABAJOS"], ["sobre","SOBRE MÍ"],
+    ["contacto","CONTACTO"], ["reservas","MIS RESERVAS"]
+  ].map(function(t) {
+    return '<button class="' + (S.view === t[0] ? "on" : "") + '" data-act="go" data-view="' + t[0] + '">' + t[1] + "</button>";
+  }).join("");
+  if (S.view === "editar") nav += '<button class="editing">EDITANDO</button>';
+  var isEdit = S.view === "editar";
+  return '<header class="top"><div class="wrap">' +
+    '<div class="topbar">' +
+      '<button class="logo" data-act="go" data-view="servicios"><span class="n display">' + esc(S.site.brand || "Mi marca") + '</span><span class="s">' + esc(S.site.brandSuffix) + "</span></button>" +
+      '<div class="topbtns">' +
+        '<button class="btn btn-sm ' + (isEdit ? "btn-pri on-edit" : "btn-out") + '" data-act="go" data-view="editar">' + IC.edit + " EDITAR</button>" +
+        '<button class="btn btn-sm btn-pri only-desktop" data-act="reservar">RESERVAR ' + IC.arrow + "</button>" +
+      "</div>" +
+    "</div>" +
+    '<nav class="nav">' + nav + "</nav>" +
+    "</div></header>";
+}
+
+/* ---- HOME ---- */
+
+function viewHome() {
+  var h = S.site.hero, c = S.site.contact;
+  var heroImg = h.photo ? '<img src="' + h.photo + '" alt="Portada">' : artSVG("hero", ["#3E2B22","#8A5A44","#DDB9A3"]);
+  var cats = S.site.catalog.map(function(cat) {
+    return '<button class="svc-card" data-act="reservar">' +
+      "<div><p class=\"nm\">" + esc(cat.name) + "</p><p class=\"tg\">" + esc(cat.tag) + "</p></div>" +
+      '<div style="text-align:right"><p class="muted">' + cat.services.length + " servicio" + (cat.services.length !== 1 ? "s" : "") + '</p>' +
+      '<p class="rs">RESERVAR ' + IC.arrow + "</p></div></button>";
+  }).join("");
+  return '<div class="fade-in"><section class="hero">' +
+    "<div>" +
+      '<p class="kicker">' + esc(h.kicker) + "</p>" +
+      '<h1 class="display">' + esc(h.title) + '<br><em style="color:var(--pri)">' + esc(h.titleAccent) + "</em></h1>" +
+      '<p class="body-txt" style="max-width:28rem;margin-bottom:1.75rem">' + esc(h.text) + "</p>" +
+      '<div class="row">' +
+        '<button class="btn btn-pri" data-act="reservar">RESERVAR TURNO ' + IC.arrow + "</button>" +
+        '<button class="btn btn-out" data-act="go" data-view="trabajos">VER TRABAJOS</button>' +
+      "</div>" +
+      '<p class="muted" style="margin-top:1.5rem;display:flex;gap:.5rem;align-items:center">' + IC.cal + " " +
+        (S.rows.length > 0 ? S.rows.length + " reserva" + (S.rows.length === 1 ? "" : "s") + " registradas" : "Agenda abierta") + " · " + esc(c.hours) + "</p>" +
+    "</div>" +
+    '<div class="hero-img">' + heroImg + '<span class="img-tag">' + esc(h.photoTag) + "</span></div>" +
+    "</section>" +
+    '<section class="sect"><div class="sect-head"><h2 class="display">Servicios</h2><span class="muted" style="letter-spacing:.2em;font-size:11px">ELEGÍ UNA CATEGORÍA</span></div>' +
+    '<div class="grid g2">' + cats + "</div></section></div>";
+}
+
+/* ---- TRABAJOS ---- */
+
+function viewTrabajos() {
+  var wks = S.site.works.map(function(w) {
+    var media = w.photo ? '<img src="' + w.photo + '" alt="' + esc(w.label) + '">' : artSVG("pub-" + w.id, w.hues);
+    return '<figure class="work">' + media +
+      '<span class="play">' + IC.play + "</span>" +
+      '<figcaption><p class="l">' + esc(w.label) + '</p><p class="s">' + esc(w.sub) + "</p></figcaption></figure>";
+  }).join("");
+  return '<div class="fade-in sect"><p class="kicker">PORTFOLIO</p><h2 class="display" style="font-size:2.4rem;margin-bottom:2rem">Trabajos</h2>' +
+    '<div class="works">' + wks + "</div>" +
+    '<p class="muted" style="margin-top:1.5rem">Subí tus fotos reales desde EDITAR → TRABAJOS.</p></div>';
+}
+
+/* ---- SOBRE MÍ ---- */
+
+function viewSobre() {
+  var a = S.site.about, c = S.site.contact;
+  var media = a.photo ? '<img src="' + a.photo + '" alt="' + esc(a.title) + '">' : artSVG("sofy", ["#2B2320","#6E4A3A","#C9A08C"]);
+  var stats = a.stats.map(function(s) {
+    return '<div class="card stat"><p class="n">' + esc(s.n) + '</p><p class="l">' + esc(s.l) + "</p></div>";
+  }).join("");
+  return '<div class="fade-in about">' +
+    '<div class="about-photo">' + media + "</div>" +
+    "<div>" +
+      '<p class="kicker">SOBRE MÍ</p>' +
+      '<h2 class="display" style="font-size:2.4rem;margin-bottom:1.25rem">' + esc(a.title) + "</h2>" +
+      '<p class="body-txt" style="margin-bottom:1rem">' + esc(a.p1) + "</p>" +
+      '<p class="body-txt" style="margin-bottom:2rem">' + esc(a.p2) + "</p>" +
+      '<div class="stats">' + stats + "</div>" +
+      '<div class="card" style="padding:1.5rem"><p class="lbl" style="display:flex;gap:.5rem;align-items:center">' + IC.pin + " EN EL ESTUDIO</p>" +
+      '<p style="font-weight:600;color:var(--ink)">' + esc(c.addr) + '</p>' +
+      '<p class="muted" style="margin-top:.25rem">' + esc(c.hours) + " · " + esc(c.note) + "</p></div>" +
+    "</div></div>";
+}
+
+/* ---- CONTACTO ---- */
+
+function viewContacto() {
+  var c = S.site.contact, wl = waLink();
+  var cards = [
+    { ic: IC.wa.replace("28px","24px").replace("28px","24px"), lb:"WHATSAPP", dt:c.waLabel, href:wl, note:"Respuesta en el día" },
+    { ic: IC.ig, lb:"INSTAGRAM", dt:"@" + c.ig, href:"https://instagram.com/" + encodeURIComponent(c.ig), note:"Looks y novedades" },
+    { ic: IC.mail, lb:"EMAIL", dt:c.email, href:"mailto:" + c.email, note:"Presupuestos y cursos" }
+  ].map(function(it) {
+    return '<a class="ct" href="' + it.href + '" target="_blank" rel="noreferrer"><span class="ic">' + it.ic + "</span>" +
+      "<div><p class=\"lb\">" + it.lb + '</p><p class="dt" style="margin-top:.25rem">' + esc(it.dt) + '</p><p class="muted" style="margin-top:.15rem">' + it.note + "</p></div></a>";
+  }).join("");
+  return '<div class="fade-in sect"><p class="kicker">HABLEMOS</p><h2 class="display" style="font-size:2.4rem;margin-bottom:2rem">Contacto</h2>' +
+    '<div class="ct-cards">' + cards + "</div>" +
+    '<div class="card" style="padding:1.5rem;margin-top:1.5rem;display:flex;flex-wrap:wrap;gap:2rem">' +
+    "<div><p class=\"lbl\" style=\"display:flex;gap:.5rem;align-items:center\">" + IC.pin + ' ESTUDIO</p><p style="font-weight:600">' + esc(c.addr) + "</p></div>" +
+    "<div><p class=\"lbl\" style=\"display:flex;gap:.5rem;align-items:center\">" + IC.clock + ' HORARIOS</p><p style="font-weight:600">' + esc(c.hours) + "</p></div>" +
+    "</div></div>";
+}
+
+/* ---- RESERVA ---- */
+
+function bookProgress(step) {
+  var names = ["Servicio","Detalle","Turno","Datos"], out = "";
+  for (var i = 0; i < 4; i++) {
+    out += '<div><div class="bar' + (i + 1 <= step ? " on" : "") + '"></div><p class="cap' + (i + 1 === step ? " on" : "") + '">' + names[i] + "</p></div>";
+  }
+  return '<div class="progress">' + out + "</div>";
+}
+
+function viewBooking() {
+  var b = S.book;
+  if (b.done) return viewSuccess();
+  var back = b.step === 1
+    ? (b.catId ? 'data-act="pickcat" data-cat=""' : 'data-act="go" data-view="servicios"')
+    : 'data-act="bkback"';
+  var head = '<div class="bk-head"><button class="backlink" ' + back + ">" + IC.back + " Volver</button>" +
+    '<p class="steplabel">PASO ' + b.step + " DE 4</p></div>" + bookProgress(b.step);
+  var body = "";
+  if (b.step === 1 && !b.catId) body = bkStep1a();
+  if (b.step === 1 && b.catId) body = bkStep1b();
+  if (b.step === 2) body = bkStep2();
+  if (b.step === 3) body = bkStep3();
+  if (b.step === 4) body = bkStep4();
+  return '<div class="bk fade-in">' + head + body + "</div>";
+}
+
+function bkStep1a() {
+  var opts = S.site.catalog.map(function(c) {
+    return '<button class="opt" data-act="pickcat" data-cat="' + esc(c.id) + '">' +
+      '<span class="nm">' + esc(c.name) + '</span><span style="margin-left:auto;display:flex;gap:.5rem;align-items:center" class="muted">' + c.services.length + " servicios " + IC.arrow + "</span></button>";
+  }).join("");
+  return '<h2 class="display">Elegí tu servicio</h2><p class="sub">¿Qué te gustaría reservar?</p><div class="stack">' + opts + "</div>";
+}
+
+function bkStep1b() {
+  var cat = S.site.catalog.filter(function(c){ return c.id === S.book.catId; })[0];
+  var opts = cat.services.map(function(s) {
+    var sel = S.book.svcId === s.id;
+    return '<button class="opt' + (sel ? " sel" : "") + '" data-act="picksvc" data-svc="' + esc(s.id) + '">' +
+      '<span class="radio"></span><span style="flex:1"><span class="nm">' + esc(s.name) + '</span>' +
+      '<span class="meta" style="display:block">' + fmtDur(s.dur) + " · desde " + money(s.price) + " · seña " + money(senaOf(s.price)) + "</span></span></button>";
+  }).join("");
+  return '<h2 class="display">' + esc(cat.name) + '</h2>' +
+    '<p class="sub">Elegí el servicio y su duración · <button style="text-decoration:underline" data-act="pickcat" data-cat="">cambiar categoría</button></p>' +
+    '<div class="stack">' + opts + "</div>" +
+    '<button class="btn btn-pri btn-block" style="margin-top:1.5rem" ' + (S.book.svcId ? 'data-act="bkstep" data-step="2"' : "disabled") + ">CONTINUAR " + IC.arrow + "</button>";
+}
+
+function bkStep2() {
+  var cat = S.site.catalog.filter(function(c){ return c.id === S.book.catId; })[0];
+  var s = cat.services.filter(function(x){ return x.id === S.book.svcId; })[0];
+  var c = S.site.contact;
+  return '<h2 class="display">' + esc(s.name) + "</h2>" +
+    '<p class="sub" style="display:flex;gap:.5rem;align-items:center">' + IC.clock + " " + fmtDur(s.dur) + " · Seña " + money(senaOf(s.price)) + " · Total " + money(s.price) + "</p>" +
+    '<p class="body-txt" style="margin-bottom:1.5rem">' + esc(s.desc) + "</p>" +
+    '<div class="card" style="padding:1.25rem;margin-bottom:1.5rem"><p class="lbl" style="display:flex;gap:.5rem;align-items:center">' + IC.pin + " EN EL ESTUDIO</p>" +
+    '<p style="font-weight:600;color:var(--ink)">' + esc(c.addr) + '</p><p class="muted" style="margin-top:.25rem">' + esc(c.hours) + " · " + esc(c.note) + "</p></div>" +
+    '<button class="btn btn-pri btn-block" data-act="bkstep" data-step="3">CONTINUAR ' + IC.arrow + "</button>";
+}
+
+function bkStep3() {
+  var today = new Date(); today.setHours(0,0,0,0);
+  var base = new Date(today.getFullYear(), today.getMonth(), 1);
+  var vd = new Date(base.getFullYear(), base.getMonth() + S.calOff, 1);
+  var y = vd.getFullYear(), m = vd.getMonth();
+  var lead = (new Date(y, m, 1).getDay() + 6) % 7;
+  var dim = new Date(y, m + 1, 0).getDate();
+  var html = '<h2 class="display">Turnos</h2><p class="sub">Elegí el día y el horario</p>' +
+    '<div class="card" style="padding:1.25rem;margin-bottom:1.25rem">' +
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">' +
+    '<button class="btn btn-sm btn-out" style="border-radius:50%;padding:.5rem .65rem"' + (S.calOff > 0 ? ' data-act="calmove" data-d="-1"' : " disabled") + ">" + IC.back + "</button>" +
+    '<p style="font-weight:600;text-transform:capitalize">' + MESES[m] + " " + y + "</p>" +
+    '<button class="btn btn-sm btn-out" style="border-radius:50%;padding:.5rem .65rem" data-act="calmove" data-d="1">' + IC.arrow + "</button></div>" +
+    '<div class="cal-grid">' + ["L","M","M","J","V","S","D"].map(function(d){ return '<span class="dow">' + d + "</span>"; }).join("");
+  for (var i = 0; i < lead; i++) html += "<span></span>";
+  for (var d = 1; d <= dim; d++) {
+    var dt = new Date(y, m, d);
+    var off = dt < today || dt.getDay() === 0;
+    var sel = S.book.dateKey === dateKeyOf(y, m, d);
+    html += '<button class="cal-day' + (sel ? " sel" : "") + '"' + (off ? " disabled" : ' data-act="picksday" data-key="' + dateKeyOf(y, m, d) + '"') + ">" + d + "</button>";
+  }
+  html += "</div></div>";
+  if (S.book.dateKey) {
+    html += '<p class="muted" style="text-transform:capitalize;margin-bottom:.75rem">' + labelFromKey(S.book.dateKey) + '</p><div class="slot-grid">';
+    SLOTS.forEach(function(t) {
+      var occ = busy(S.book.dateKey, t), sel = S.book.time === t;
+      html += '<button class="slot' + (sel ? " sel" : "") + '"' + (occ ? " disabled" : ' data-act="pickslot" data-t="' + t + '"') + ">" + t + "</button>";
+    });
+    html += "</div>";
+  } else {
+    html += '<p class="muted" style="background:#F3EEE8;border-radius:.75rem;padding:.75rem 1rem;margin-bottom:1.25rem">Primero elegí un día del calendario 👆</p>';
+  }
+  html += '<p class="hold">🔒 Te bloqueamos el horario por 1 hora para completar la reserva.</p>' +
+    '<button class="btn btn-pri btn-block" ' + (S.book.time ? 'data-act="bkstep" data-step="4"' : "disabled") + ">CONTINUAR " + IC.arrow + "</button>";
+  return html;
+}
+
+function bkStep4() {
+  var b = S.book;
+  var cat = S.site.catalog.filter(function(c){ return c.id === b.catId; })[0];
+  var s = cat.services.filter(function(x){ return x.id === b.svcId; })[0];
+  var dig = function(v){ return String(v || "").replace(/\D/g, ""); };
+  var valid = b.name.trim().length >= 3 && dig(b.phone).length >= 8 && dig(b.phone) === dig(b.phone2);
+  var F = function(label, key, ph, hint, type) {
+    return '<div style="margin-bottom:1rem"><label class="lbl">' + label + '</label>' +
+      '<input class="input" type="' + (type || "text") + '" value="' + esc(b[key]) + '" placeholder="' + esc(ph) + '" data-bind="book.' + key + '">' +
+      (hint ? '<p class="muted" style="margin-top:.25rem">' + hint + "</p>" : "") + "</div>";
+  };
+  return '<h2 class="display">Cargá tus datos</h2><p class="sub">Y te mandamos un WhatsApp con todo lo necesario para pagar la seña y confirmar tu reserva.</p>' +
+    '<div class="card" style="padding:1.25rem;margin-bottom:1.5rem"><p style="font-weight:600;color:var(--ink)">' + esc(s.name) + "</p>" +
+    '<p class="muted" style="text-transform:capitalize;margin-top:.15rem">' + labelFromKey(b.dateKey) + " — " + b.time + "</p>" +
+    '<div style="border-top:1px solid #F0EBE3;margin-top:1rem;padding-top:1rem;display:flex;justify-content:space-between;align-items:center">' +
+    '<p class="lbl" style="margin:0">TOTAL</p><p style="text-align:right"><span style="font-weight:600;font-size:1.1rem;color:var(--ink)">' + money(s.price) +
+    '</span><span class="muted" style="display:block">seña ' + money(senaOf(s.price)) + " · " + fmtDur(s.dur) + "</span></p></div></div>" +
+    F("NOMBRE Y APELLIDO", "name", "Tu nombre completo") +
+    F("TELÉFONO (WHATSAPP)", "phone", "+54 9 11 ...", "Te vamos a escribir por WhatsApp para completar la reserva.", "tel") +
+    F("CONFIRMÁ TU TELÉFONO", "phone2", "+54 9 11 ...", null, "tel") +
+    F("INSTAGRAM (OPCIONAL)", "ig", "@tuusuario") +
+    (!valid ? '<p style="font-size:12px;color:#B0644F;margin-bottom:1rem">Revisá los campos: nombre completo, teléfono válido y que ambos números coincidan.</p>' : "") +
+    '<button class="btn btn-pri btn-block" ' + (valid ? 'data-act="confirm"' : "disabled") + ">CONFIRMAR RESERVA</button>";
+}
+
+function viewSuccess() {
+  var r = S.book.done;
+  return '<div class="bk fade-in" style="text-align:center;padding-top:3.5rem">' +
+    '<div style="width:80px;height:80px;margin:0 auto 1.5rem;border-radius:50%;background:var(--pri);display:flex;align-items:center;justify-content:center;color:#fff">' + IC.check + "</div>" +
+    '<h2 class="display" style="font-size:2.2rem;margin-bottom:.5rem">¡Reserva registrada!</h2>' +
+    '<p class="body-txt">Código <b>' + esc(r.code) + '</b></p>' +
+    '<p class="muted" style="text-transform:capitalize;margin-bottom:2rem">' + labelFromKey(r.dateKey) + " — " + r.time + "</p>" +
+    '<div class="card" style="padding:1.25rem;text-align:left;margin-bottom:2rem"><p style="font-weight:600;color:var(--ink)">' + esc(r.service) + "</p>" +
+    '<p class="muted" style="margin-top:.15rem">A nombre de ' + esc(r.name) + "</p>" +
+    '<div style="border-top:1px solid #F0EBE3;margin-top:1rem;padding-top:1rem;display:flex;justify-content:space-between;align-items:center">' +
+    '<span class="lbl" style="margin:0">SEÑA A PAGAR</span><span style="font-weight:600;font-size:1.1rem;color:var(--ink)">' + money(r.sena) + "</span></div></div>" +
+    '<p class="body-txt" style="margin-bottom:2rem">Te vamos a escribir por WhatsApp con todo lo necesario para pagar la seña y confirmar tu reserva. 💄</p>' +
+    '<button class="btn btn-pri btn-block" data-act="success-done" data-view="reservas">VER MIS RESERVAS</button>' +
+    '<button class="btn btn-out btn-block" style="margin-top:.75rem" data-act="success-done" data-view="servicios">VOLVER AL INICIO</button></div>';
+}
+
+/* ---- MIS RESERVAS ---- */
+
+function resCards(admin) {
+  if (!S.rows.length) {
+    return '<div class="card" style="text-align:center;padding:4rem 1rem"><p class="muted" style="margin-bottom:1.25rem">Todavía no hay reservas.</p>' +
+      (admin ? "" : '<button class="btn btn-pri" data-act="reservar">RESERVAR TURNO ' + IC.arrow + "</button>") + "</div>";
+  }
+  var wl = waLink();
+  return S.rows.map(function(r) {
+    var cancel = r.status !== "Cancelada";
+    return '<div class="card res-card' + (cancel ? "" : " cancelled") + '">' +
+      '<div class="res-top"><div><p style="font-weight:600;color:var(--ink)">' + esc(r.service) + "</p>" +
+      '<p class="muted" style="text-transform:capitalize;margin-top:.15rem">' + labelFromKey(r.dateKey) + " — " + r.time + "</p></div>" +
+      '<span class="badge ' + (cancel ? "ok" : "no") + '">' + esc(r.status.toUpperCase()) + "</span></div>" +
+      '<div class="res-meta"><span><b style="color:#5C5248">' + esc(r.name) + "</b> · " + esc(r.phone) + "</span>" +
+      "<span>" + esc(r.ig || "—") + " · Código " + esc(r.code) + "</span>" +
+      '<span style="color:var(--pri);font-weight:600">' + money(r.total) + " · seña " + money(r.sena) + "</span></div>" +
+      '<div class="res-actions"><a class="link-wa" href="' + wl + "?text=" + encodeURIComponent("Hola " + S.site.brand + "! Consulto por mi reserva " + r.code + " (" + r.service + ", " + shortLabel(r.dateKey) + " " + r.time + ").") + '" target="_blank" rel="noreferrer">' + IC.waS + " CONSULTAR</a>" +
+      (cancel ? '<button class="link-danger" data-act="cancelres" data-code="' + esc(r.code) + '" style="margin-left:auto">CANCELAR</button>' : "") +
+      (admin ? '<button class="link-danger' + (S.arm === "res:" + r.code ? " armed" : "") + '" data-act="delres" data-code="' + esc(r.code) + '">' + IC.trash + (S.arm === "res:" + r.code ? " ¿CONFIRMAR?" : " BORRAR") + "</button>" : "") +
+      "</div></div>";
+  }).join('<div style="height:.75rem"></div>');
+}
+
+function viewReservas(admin) {
+  var actives = S.rows.filter(function(r){ return r.status !== "Cancelada"; }).length;
+  return '<div class="bk fade-in" style="padding-top:2.5rem"><p class="kicker">AGENDA</p>' +
+    '<h2 class="display" style="font-size:2.2rem;margin-bottom:1.5rem">' + (admin ? "Gestión de reservas" : "Mis reservas") + "</h2>" +
+    (S.rows.length ? '<p class="muted" style="margin-bottom:1rem">' + actives + " activa" + (actives === 1 ? "" : "s") + "</p>" : "") +
+    resCards(admin) + "</div>";
+}
+
+/* ---- EDICIÓN ---- */
+
+var ED_TABS = [["portada","PORTADA"],["servicios","SERVICIOS"],["trabajos","TRABAJOS"],["sobre","SOBRE MÍ"],["contacto","CONTACTO"],["diseno","DISEÑO"],["reservas","RESERVAS"],["datos","DATOS Y BACKEND"]];
+
+function fld(label, bind, value, opts) {
+  opts = opts || {};
+  if (opts.textarea) return '<div style="margin-bottom:1rem"><label class="lbl">' + label + '</label><textarea class="input" data-bind="' + bind + '">' + esc(value) + "</textarea></div>";
+  return '<div style="margin-bottom:1rem"><label class="lbl">' + label + '</label><input class="input" type="' + (opts.type || "text") + '" value="' + esc(value) + '" data-bind="' + bind + '"></div>';
+}
+
+function photoField(label, bind, value, hues, ratio, artId) {
+  var media = value ? '<img src="' + value + '" alt="">' : artSVG(artId, hues);
+  return '<div><p class="lbl">' + label + '</p>' +
+    '<div class="photo-box" style="aspect-ratio:' + ratio + '">' + media +
+    '<label class="photo-overlay"><span>' + IC.cam + (value ? " CAMBIAR FOTO" : " SUBIR FOTO") + '</span><input type="file" accept="image/*" style="display:none" data-photo="' + bind + '"></label></div>' +
+    (value ? '<button class="del-photo" data-act="delfoto" data-bind="' + bind + '">Quitar foto (volver al arte de fondo)</button>' : "") + "</div>";
+}
+
+function delBtn(act, key, label) {
+  var armed = S.arm === key;
+  return '<button class="link-danger' + (armed ? " armed" : "") + '" data-act="' + act + '" data-key="' + esc(key) + '">' + IC.trash + " " + (armed ? "¿CONFIRMAR?" : (label || "ELIMINAR")) + "</button>";
+}
+
+function viewEditar() {
+  var t = S.editTab;
+  var tabs = ED_TABS.map(function(x) {
+    return '<button class="ed-tab' + (t === x[0] ? " on" : "") + '" data-act="edtab" data-tab="' + x[0] + '">' + x[1] + "</button>";
+  }).join("");
+  var body = "";
+  if (t === "portada") body = edPortada();
+  if (t === "servicios") body = edServicios();
+  if (t === "trabajos") body = edTrabajos();
+  if (t === "sobre") body = edSobre();
+  if (t === "contacto") body = edContacto();
+  if (t === "diseno") body = edDiseno();
+  if (t === "reservas") body = viewReservas(true);
+  if (t === "datos") body = edDatos();
+  return '<div class="fade-in" style="padding:2rem 0 0">' +
+    '<div class="ed-head"><div><p class="kicker">MODO EDICIÓN</p><h2 class="display" style="font-size:2rem">Personalizá tu sitio</h2></div>' +
+    '<div style="display:flex;gap:.5rem"><button class="btn btn-sm btn-out" data-act="reservar">PROBAR RESERVA</button>' +
+    '<button class="btn btn-sm btn-pri" data-act="go" data-view="servicios">VER SITIO</button></div></div>' +
+    '<div class="ed-tabs">' + tabs + "</div>" + body + "</div>";
+}
+
+function edPortada() {
+  return '<div class="ed-grid"><div>' +
+    fld("NOMBRE DE LA MARCA", "site.brand", S.site.brand) +
+    '<p class="mini-label" style="margin:-.75rem 0 1rem">Aparece en el logo, ej: Sofy</p>' +
+    fld("COMPLEMENTO DEL LOGO", "site.brandSuffix", S.site.brandSuffix) +
+    fld("TÍTULO PRINCIPAL", "site.hero.title", S.site.hero.title) +
+    fld("TÍTULO DESTACADO", "site.hero.titleAccent", S.site.hero.titleAccent) +
+    fld("ETIQUETA SOBRE LA FOTO", "site.hero.photoTag", S.site.hero.photoTag) +
+    "</div><div>" +
+    fld("FRASE SUPERIOR", "site.hero.kicker", S.site.hero.kicker) +
+    fld("TEXTO DE PORTADA", "site.hero.text", S.site.hero.text, { textarea: true }) +
+    photoField("FOTO DE PORTADA", "site.hero.photo", S.site.hero.photo, ["#3E2B22","#8A5A44","#DDB9A3"], "4/3", "edit-hero") +
+    "</div></div>";
+}
+
+function edServicios() {
+  var html = S.site.catalog.map(function(c, ci) {
+    var svcs = c.services.map(function(s, si) {
+      return '<div class="ed-svc">' +
+        '<div class="row">' +
+        '<div class="grow" style="flex:2 1 200px">' + fld("SERVICIO", "site.catalog." + ci + ".services." + si + ".name", s.name) + "</div>" +
+        '<div style="flex:0 0 130px">' + fld("DURACIÓN (MIN)", "site.catalog." + ci + ".services." + si + ".dur", s.dur, { type: "number" }) + "</div>" +
+        '<div style="flex:0 0 140px">' + fld("PRECIO $", "site.catalog." + ci + ".services." + si + ".price", s.price, { type: "number" }) + "</div>" +
+        "</div>" +
+        fld("DESCRIPCIÓN", "site.catalog." + ci + ".services." + si + ".desc", s.desc, { textarea: true }) +
+        '<div style="display:flex;justify-content:space-between;align-items:center">' +
+        '<span class="mini-label">Seña automática: ' + money(senaOf(s.price)) + " (30%)</span>" +
+        delBtn("delsvc", c.id + "|" + s.id) + "</div></div>";
+    }).join("");
+    return '<div class="card ed-cat"><div class="row">' +
+      '<div class="grow">' + fld("CATEGORÍA", "site.catalog." + ci + ".name", c.name) + "</div>" +
+      '<div class="grow">' + fld("DESCRIPCIÓN CORTA", "site.catalog." + ci + ".tag", c.tag) + "</div>" +
+      '<div style="padding-top:1.25rem">' + delBtn("delcat", c.id, "QUITAR") + "</div></div>" +
+      svcs +
+      '<button class="btn btn-sm btn-out" style="margin-top:.75rem" data-act="addsvc" data-cat="' + esc(c.id) + '">+ AGREGAR SERVICIO</button></div>';
+  }).join("");
+  return '<div class="stack">' + html + '<button class="btn btn-sm btn-pri" data-act="addcat">+ NUEVA CATEGORÍA</button></div>';
+}
+
+function edTrabajos() {
+  var cards = S.site.works.map(function(w, wi) {
+    return '<div class="card" style="padding:1rem">' +
+      photoField("FOTO", "site.works." + wi + ".photo", w.photo, w.hues, "1/1", "ed-" + w.id) +
+      '<div style="margin-top:.75rem">' +
+      fld("TÍTULO", "site.works." + wi + ".label", w.label) +
+      fld("SUBTÍTULO", "site.works." + wi + ".sub", w.sub) +
+      delBtn("delwork", w.id, "QUITAR TRABAJO") + "</div></div>";
+  }).join("");
+  return '<p class="body-txt" style="margin-bottom:1.25rem">Subí una foto desde tu celular o compu. Si no subís foto, se muestra un arte de fondo elegante.</p>' +
+    '<div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(260px,1fr))">' + cards + "</div>" +
+    '<button class="btn btn-sm btn-pri" style="margin-top:1.25rem" data-act="addwork">+ AGREGAR TRABAJO</button>';
+}
+
+function edSobre() {
+  var a = S.site.about;
+  var stats = a.stats.map(function(st, i) {
+    return '<div class="row" style="margin-bottom:.75rem">' +
+      '<div style="flex:0 0 120px"><input class="input" value="' + esc(st.n) + '" data-bind="site.about.stats.' + i + '.n" placeholder="+150"></div>' +
+      '<div class="grow"><input class="input" value="' + esc(st.l) + '" data-bind="site.about.stats.' + i + '.l" placeholder="novias"></div></div>';
+  }).join("");
+  return '<div class="ed-grid"><div>' +
+    fld("TÍTULO", "site.about.title", a.title) +
+    fld("PÁRRAFO 1", "site.about.p1", a.p1, { textarea: true }) +
+    fld("PÁRRAFO 2", "site.about.p2", a.p2, { textarea: true }) +
+    '<p class="lbl">NÚMEROS DESTACADOS</p>' + stats + "</div><div>" +
+    photoField("TU FOTO", "site.about.photo", a.photo, ["#2B2320","#6E4A3A","#C9A08C"], "3/4", "edit-sofy") +
+    "</div></div>";
+}
+
+function edContacto() {
+  var c = S.site.contact;
+  return '<div class="ed-grid"><div>' +
+    fld("WHATSAPP (SÓLO NÚMEROS, CON CÓDIGO PAÍS)", "site.contact.wa", c.wa) +
+    '<p class="mini-label" style="margin:-.75rem 0 1rem">Ej: 5491123456789 — el botón flotante usa este número.</p>' +
+    fld("WHATSAPP MOSTRADO", "site.contact.waLabel", c.waLabel) +
+    fld("INSTAGRAM (USUARIO SIN @)", "site.contact.ig", c.ig) +
+    fld("EMAIL", "site.contact.email", c.email) +
+    "</div><div>" +
+    fld("DIRECCIÓN DEL ESTUDIO", "site.contact.addr", c.addr) +
+    fld("HORARIOS", "site.contact.hours", c.hours) +
+    fld("NOTA DE ESTUDIO", "site.contact.note", c.note) +
+    "</div></div>";
+}
+
+function edDiseno() {
+  var presets = [["#4B3621","#FAF8F5","Marrón clásico"],["#8A5A44","#FAF6F2","Caramelo"],["#1A1512","#F7F5F2","Negro blanco"],["#7A2E3A","#FBF6F4","Vino"],["#3E4A3B","#F5F7F4","Verde oliva"],["#2F3A4C","#F4F6F9","Azul noche"]];
+  var sw = presets.map(function(p) {
+    return '<button class="swatch" data-act="palette" data-p="' + p[0] + '" data-b="' + p[1] + '"><span class="p" style="background:' + p[0] + '"></span><span class="b" style="background:' + p[1] + '"></span>' + p[2] + "</button>";
+  }).join("");
+  return '<div style="max-width:30rem"><p class="body-txt" style="margin-bottom:1.25rem">Color principal (botones y acentos) y color de fondo del sitio.</p>' +
+    '<div class="card" style="padding:1.25rem;margin-bottom:1.25rem">' +
+    '<p class="lbl">COLOR PRINCIPAL</p><div style="display:flex;gap:.75rem;align-items:center">' +
+    '<input type="color" value="' + esc(S.site.theme.primary) + '" data-bind-color="site.theme.primary" style="width:48px;height:40px;border:1px solid #E4DCD2;border-radius:.5rem;background:none;cursor:pointer">' +
+    '<input class="input" value="' + esc(S.site.theme.primary) + '" data-bind="site.theme.primary"></div>' +
+    '<p class="lbl" style="margin-top:1.25rem">COLOR DE FONDO</p><div style="display:flex;gap:.75rem;align-items:center">' +
+    '<input type="color" value="' + esc(S.site.theme.bg) + '" data-bind-color="site.theme.bg" style="width:48px;height:40px;border:1px solid #E4DCD2;border-radius:.5rem;background:none;cursor:pointer">' +
+    '<input class="input" value="' + esc(S.site.theme.bg) + '" data-bind="site.theme.bg"></div></div>' +
+    '<p class="lbl">PALETAS LISTAS</p><div class="swatches">' + sw + "</div></div>";
+}
+
+function edDatos() {
+  var bytes = 0;
+  try {
+    bytes = (localStorage.getItem(KEY_SITE) || "").length + (localStorage.getItem(KEY_RES) || "").length;
+  } catch (e) {}
+  var pct = Math.min(100, Math.round((bytes / (5 * 1024 * 1024)) * 100));
+  var st = S.syncStatus, cls = st.indexOf("✅") === 0 ? "status-ok" : st.indexOf("❌") === 0 ? "status-err" : "status-info";
+  return '<div style="max-width:30rem">' +
+    '<div class="card" style="padding:1.25rem;margin-bottom:1.25rem"><p class="lbl">ALMACENAMIENTO LOCAL</p>' +
+    '<p class="body-txt" style="font-size:13px;margin-bottom:.75rem">Todo lo que editás se guarda automáticamente en este dispositivo. Las fotos subidas ocupan espacio.</p>' +
+    '<div class="meter"><div style="width:' + Math.max(2, pct) + '%"></div></div>' +
+    '<p class="muted">' + Math.round(bytes / 1024) + " KB usados de ~5.000 KB (" + pct + "%)</p></div>" +
+    '<div class="card" style="padding:1.25rem;margin-bottom:1.25rem"><p class="lbl">BACKEND (API REST)</p>' +
+    '<p class="body-txt" style="font-size:13px;margin-bottom:1rem">Pegá la URL de tu API (ej: <span class="mono">https://tu-api.vercel.app/api</span>). El sitio leerá <span class="mono">/config</span> y <span class="mono">/reservas</span> y subirá los cambios a los mismos endpoints. La interfaz no cambia.</p>' +
+    fld("URL DEL BACKEND", "site.sync.endpoint", S.site.sync.endpoint) +
+    '<label class="chk"><input type="checkbox" data-bind="site.sync.autoSync"' + (S.site.sync.autoSync ? " checked" : "") + '><span>Al abrir el sitio, bajar automáticamente los datos del backend</span></label>' +
+    '<div style="display:flex;gap:.5rem;margin-bottom:.75rem">' +
+    '<button class="btn btn-sm btn-out" style="flex:1"' + (S.syncBusy ? " disabled" : "") + ' data-act="pull">DESCARGAR</button>' +
+    '<button class="btn btn-sm btn-pri" style="flex:1"' + (S.syncBusy ? " disabled" : "") + ' data-act="push">SUBIR TODO</button></div>' +
+    '<p class="mini-label">Cada reserva nueva también se envía sola al backend por POST a /reservas.</p></div>' +
+    '<div class="card" style="padding:1.25rem;margin-bottom:1rem"><p class="lbl">RESPALDO (JSON)</p>' +
+    '<div style="display:flex;gap:.5rem;margin-bottom:.75rem">' +
+    '<button class="btn btn-sm btn-out" style="flex:1" data-act="export">EXPORTAR TODO</button>' +
+    '<button class="btn btn-sm btn-out" style="flex:1"' + (S.paste.trim() ? ' data-act="import"' : " disabled") + '>IMPORTAR DE ABAJO</button></div>' +
+    '<textarea class="input mono" style="min-height:120px" data-paste placeholder="Pegá acá un respaldo JSON para importarlo…">' + esc(S.paste) + "</textarea>" +
+    '<label class="btn btn-sm btn-out" style="margin-top:.75rem;cursor:pointer">O ELEGIR ARCHIVO .JSON<input type="file" accept="application/json,.json" style="display:none" data-json></label></div>' +
+    ((S.syncBusy || st) ? '<p class="' + cls + '">' + (S.syncBusy ? "Trabajando con el backend…" : esc(st)) + "</p>" : "") +
+    "</div>";
+}
+
+/* ============ RENDER ============ */
+
+function render() {
+  var root = document.documentElement.style;
+  root.setProperty("--pri", S.site.theme.primary);
+  root.setProperty("--ink", S.site.theme.ink || "#2A1B12");
+  root.setProperty("--bg", S.site.theme.bg);
+  var main = "";
+  if (S.view === "servicios") main = viewHome();
+  else if (S.view === "trabajos") main = viewTrabajos();
+  else if (S.view === "sobre") main = viewSobre();
+  else if (S.view === "contacto") main = viewContacto();
+  else if (S.view === "reservas") main = viewReservas(false);
+  else if (S.view === "reservar") main = viewBooking();
+  else if (S.view === "editar") main = viewEditar();
+  app.innerHTML = renderHeader() +
+    '<main class="wrap">' + main + "</main>" +
+    '<a class="fab" href="' + waLink() + '" target="_blank" rel="noreferrer" aria-label="WhatsApp">' + IC.wa + "</a>";
+  window.scrollTo(0, 0);
+}
+
+/* ============ ACCIONES ============ */
+
+var _armTimer = null;
+function arm(key, del) {
+  if (S.arm === key) { S.arm = null; del(); }
+  else {
+    S.arm = key;
+    if (_armTimer) clearTimeout(_armTimer);
+    _armTimer = setTimeout(function(){ if (S.arm) { S.arm = null; render(); } }, 3000);
+  }
+  render();
+}
+
+function findCat(id) { for (var i = 0; i < S.site.catalog.length; i++) if (S.site.catalog[i].id === id) return i; return -1; }
+
+var ACT = {
+  go: function(d) { S.view = d.view; render(); },
+  reservar: function() {
+    S.book = { step:1, catId:null, svcId:null, dateKey:null, time:null, name:"", phone:"", phone2:"", ig:"", done:null };
+    S.view = "reservar"; render();
+  },
+  pickcat: function(d) { S.book.catId = d.cat || null; S.book.svcId = null; render(); },
+  picksvc: function(d) { S.book.svcId = d.svc; render(); },
+  bkstep: function(d) { S.book.step = Number(d.step); render(); },
+  bkback: function() { S.book.step -= 1; if (S.book.step === 1) S.book.svcId = null; render(); },
+  calmove: function(d) { S.calOff += Number(d.d); render(); },
+  picksday: function(d) { S.book.dateKey = d.key; S.book.time = null; render(); },
+  pickslot: function(d) { S.book.time = d.t; render(); },
+  confirm: function() {
+    var b = S.book;
+    var ci = findCat(b.catId);
+    var cat = S.site.catalog[ci];
+    var svc = null;
+    cat.services.forEach(function(s){ if (s.id === b.svcId) svc = s; });
+    if (!svc) return;
+    var row = {
+      code: "SM-" + (1000 + Math.floor(Math.random() * 9000)),
+      cat: cat.name, service: svc.name, dateKey: b.dateKey, time: b.time,
+      name: b.name.trim(), phone: b.phone, ig: b.ig.trim(),
+      total: Number(svc.price) || 0, sena: senaOf(svc.price), status: "Confirmada"
+    };
+    S.rows.unshift(row);
+    persist();
+    apiPushReserva(row);
+    b.done = row;
+    render();
+  },
+  "success-done": function(d) { S.book = null; S.view = d.view; render(); },
+  cancelres: function(d) {
+    S.rows.forEach(function(r){ if (r.code === d.code) r.status = "Cancelada"; });
+    persist(); render();
+  },
+  delres: function(d) { arm("res:" + d.code, function(){ S.rows = S.rows.filter(function(r){ return r.code !== d.code; }); persist(); }); },
+  edtab: function(d) { S.editTab = d.tab; S.arm = null; render(); },
+  addcat: function() {
+    S.site.catalog.push({ id: uid(), name: "Nueva categoría", tag: "Descripción corta", services: [] });
+    persist(); render();
+  },
+  delcat: function(d) { arm("cat:" + d.key, function(){ S.site.catalog.splice(findCat(d.key), 1); persist(); }); },
+  addsvc: function(d) {
+    var i = findCat(d.cat);
+    S.site.catalog[i].services.push({ id: uid(), name: "Nuevo servicio", dur: 45, price: 10000, desc: "Descripción del servicio." });
+    persist(); render();
+  },
+  delsvc: function(d) {
+    arm("svc:" + d.key, function() {
+      var parts = d.key.split("|"), i = findCat(parts[0]);
+      var svcs = S.site.catalog[i].services;
+      svcs.splice(svcs.indexOf(svcs.filter(function(s){ return s.id === parts[1]; })[0]), 1);
+      persist();
+    });
+  },
+  addwork: function() {
+    S.site.works.push({ id: uid(), label: "Nuevo trabajo", sub: "Descripción del look", hues: ["#3E2B22","#8A5A44","#DDB9A3"], photo: null });
+    persist(); render();
+  },
+  delwork: function(d) {
+    arm("work:" + d.key, function(){
+      S.site.works = S.site.works.filter(function(w){ return w.id !== d.key; });
+      persist();
+    });
+  },
+  delfoto: function(d) { setPath(d.bind, null); persist(); render(); },
+  palette: function(d) { S.site.theme.primary = d.p; S.site.theme.bg = d.b; persist(); render(); },
+  export: function() {
+    var data = JSON.stringify({ site: S.site, reservas: S.rows }, null, 2);
+    try {
+      var blob = new Blob([data], { type: "application/json" });
+      var a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "sofy-makeup-backup.json";
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function(){ URL.revokeObjectURL(a.href); }, 2000);
+    } catch (e) {}
+    S.paste = data;
+    S.syncStatus = "Copia el JSON de abajo como respaldo (también se intentó descargar).";
+    render();
+  },
+  import: function() {
+    try {
+      var p = JSON.parse(S.paste);
+      if (!p.site) throw new Error("falta 'site'");
+      S.site = Object.assign(clone(DEFAULT_SITE), p.site);
+      if (Array.isArray(p.reservas)) S.rows = p.reservas;
+      persist();
+      S.paste = "";
+      S.syncStatus = "✅ Contenido importado.";
+    } catch (e) {
+      S.syncStatus = "❌ JSON inválido: " + e.message;
+    }
+    render();
+  },
+  pull: function() {
+    var ep = S.site.sync.endpoint;
+    if (!ep) { S.syncStatus = "Primero configurá la URL del backend."; render(); return; }
+    S.syncBusy = true; render();
+    apiPull(ep).then(function(r) {
+      S.site = Object.assign(clone(DEFAULT_SITE), r.config);
+      if (Array.isArray(r.reservas)) S.rows = r.reservas;
+      persist();
+      S.syncStatus = "✅ Datos descargados del backend.";
+    }).catch(function(e) {
+      S.syncStatus = "❌ No se pudo conectar: " + e.message;
+    }).then(function() { S.syncBusy = false; render(); });
+  },
+  push: function() {
+    var ep = S.site.sync.endpoint;
+    if (!ep) { S.syncStatus = "Primero configurá la URL del backend."; render(); return; }
+    S.syncBusy = true; render();
+    apiPush(ep, S.site, S.rows).then(function() {
+      S.syncStatus = "✅ Datos subidos al backend.";
+    }).catch(function(e) {
+      S.syncStatus = "❌ No se pudo subir: " + e.message;
+    }).then(function() { S.syncBusy = false; render(); });
+  }
+};
+
+document.addEventListener("click", function(e) {
+  var el = e.target.closest("[data-act]");
+  if (!el || el.disabled) return;
+  var fn = ACT[el.dataset.act];
+  if (fn) fn(el.dataset, el);
+});
+
+/* guardado diferido: evita serializar fotos grandes en cada tecla */
+var _persistTimer = null;
+function persistSoon() {
+  if (_persistTimer) clearTimeout(_persistTimer);
+  _persistTimer = setTimeout(persist, 400);
+}
+
+/* inputs de texto: actualizan el modelo sin re-render (conserva el foco) */
+document.addEventListener("input", function(e) {
+  var el = e.target;
+  if (el.dataset.bind) {
+    setPath(el.dataset.bind, el.type === "checkbox" ? el.checked : el.value);
+    persistSoon();
+  } else if (el.dataset.paste !== undefined && el.tagName === "TEXTAREA") {
+    S.paste = el.value;
+  }
+});
+
+document.addEventListener("change", function(e) {
+  var el = e.target;
+  if (el.dataset.bindColor) {
+    setPath(el.dataset.bindColor, el.value);
+    persist(); render();
+  } else if (el.dataset.bind && el.type === "checkbox") {
+    setPath(el.dataset.bind, el.checked);
+    persist();
+  } else if (el.dataset.bind && el.type === "color") {
+    setPath(el.dataset.bind, el.value);
+    persist();
+  } else if (el.dataset.photo) {
+    var f = el.files && el.files[0];
+    if (!f) return;
+    var fr = new FileReader();
+    fr.onload = function() {
+      var img = new Image();
+      img.onload = function() {
+        var scale = Math.min(1, 900 / Math.max(img.width, img.height));
+        var c = document.createElement("canvas");
+        c.width = Math.round(img.width * scale);
+        c.height = Math.round(img.height * scale);
+        c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+        setPath(el.dataset.photo, c.toDataURL("image/jpeg", 0.8));
+        persist(); render();
+      };
+      img.src = String(fr.result);
+    };
+    fr.readAsDataURL(f);
+  } else if (el.dataset.json !== undefined && el.tagName === "INPUT" && el.type === "file") {
+    var jf = el.files && el.files[0];
+    if (!jf) return;
+    var jfr = new FileReader();
+    jfr.onload = function() {
+      S.paste = String(jfr.result);
+      ACT.import();
+    };
+    jfr.readAsText(jf);
+  }
+});
+
+/* ============ ARRANQUE ============ */
+
+(function init() {
+  var ep = S.site.sync.endpoint;
+  if (ep && S.site.sync.autoSync) {
+    apiPull(ep).then(function(r) {
+      S.site = Object.assign(clone(DEFAULT_SITE), r.config);
+      if (Array.isArray(r.reservas)) S.rows = r.reservas;
+      persist();
+    }).catch(function(){}).then(render);
+  }
+  render();
+})();
+</script>
+</body>
+</html>

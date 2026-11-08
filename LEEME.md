@@ -4,6 +4,7 @@ Aplicación completa (Next.js + Supabase + Mercado Pago opcional) para que tus c
 
 1. Entren desde el **link de Instagram** a la página pública (`/`): servicios con precio y duración,
    sobre mí, trabajos, contacto y botón de WhatsApp.
+   (La versión demo anterior también sigue disponible en `/demo.html`)
 2. Reserven turno (`/reservar`): eligen servicio → calendario del mes (días con lugares) → horario
    disponible → sus datos. Al confirmar, **el horario queda bloqueado por 1 hora** para completar el pago.
 3. Paguen la **seña**:
@@ -25,6 +26,8 @@ listado de avisos de mail.
 1. **Supabase** — entrá a [supabase.com](https://supabase.com) con tu cuenta:
    - Creá un proyecto nuevo (llamalo por ejemplo `makup`).
    - En el menú → *SQL Editor*: pegá **todo** el contenido de `supabase/schema.sql` y apretá *Run*.
+   - (Opcional) Pegá también `supabase/datos-sofy.sql` y *Run*: carga el catálogo real de Sofy
+     (precios, señas 30% y textos de la marca), reemplazando los datos de ejemplo.
    - En *Project Settings → API*: copiá la `Project URL` y la `service_role key`.
 2. **Claves en la app** — copiá `.env.example` como `.env.local` y pegá:
    ```
