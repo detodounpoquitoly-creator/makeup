@@ -433,6 +433,7 @@ textarea.input {
   aspect-ratio: 3/4;
   box-shadow: 0 12px 40px rgba(75, 54, 33, 0.15);
 }
+.about-photo img,
 .about-photo svg {
   width: 100%;
   height: 100%;

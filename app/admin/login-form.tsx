@@ -31,7 +31,9 @@ export default function LoginAdmin() {
 
   return (
     <main className="mx-auto max-w-sm px-6 py-20">
-      <h1 className="serif text-2xl">Panel de administración</h1>
+      <p className="text-sm tracking-widest text-muted uppercase">¡Hola!</p>
+      <h1 className="serif text-2xl">MakeUp Sofy</h1>
+      <p className="mt-1 text-sm text-muted">Completá tu contraseña para entrar.</p>
       <form onSubmit={enviar} className="mt-6 rounded-2xl bg-card p-6 shadow-sm">
         <label className="block">
           <span className="mb-1 block text-xs tracking-widest text-muted uppercase">Contraseña</span>

@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import type { DatosAdmin, ServicioRow, CategoriaRow, BloqueoRow } from "@/lib/datos-admin";
+import type { DatosAdmin, ServicioRow, CategoriaRow, BloqueoRow, Integraciones } from "@/lib/datos-admin";
 
-const TABS = ["Turnos", "Servicios", "Categorías", "Agenda", "Bloqueos", "Config", "Avisos"] as const;
+const TABS = ["Turnos", "Servicios", "Categorías", "Agenda", "Bloqueos", "Config", "Apariencias", "Documentación", "Avisos"] as const;
 type Tab = (typeof TABS)[number];
 
 const DIAS_NOMBRE = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
@@ -317,6 +317,14 @@ export default function PanelAdmin({ inicial }: { inicial: DatosAdmin }) {
       {/* ── Config ── */}
       {tab === "Config" && <Configuracion config={datos.config} guardar={guardar} />}
 
+      {/* ── Apariencias ── */}
+      {tab === "Apariencias" && <Apariencias config={datos.config} guardar={guardar} />}
+
+      {/* ── Documentación ── */}
+      {tab === "Documentación" && (
+        <Documentacion config={datos.config} integraciones={datos.integraciones} />
+      )}
+
       {/* ── Avisos ── */}
       {tab === "Avisos" && (
         <section className="mt-5 space-y-2">
@@ -588,5 +596,448 @@ function Configuracion({ config, guardar }: { config: Record<string, string>; gu
         </p>
       )}
     </form>
+  );
+}
+
+/* ── Apariencias ─────────────────────────────────────────────────────────── */
+
+type ClaveApariencia =
+  | "apariencia_acento" | "apariencia_acento_suave" | "apariencia_acento_fg"
+  | "apariencia_fondo" | "apariencia_panel" | "apariencia_texto"
+  | "apariencia_hero_imagen" | "apariencia_sobre_imagen";
+
+const APARIENCIA_COLORES: { clave: ClaveApariencia; etiqueta: string }[] = [
+  { clave: "apariencia_acento", etiqueta: "Color principal" },
+  { clave: "apariencia_acento_suave", etiqueta: "Color principal (hover)" },
+  { clave: "apariencia_acento_fg", etiqueta: "Texto sobre el color principal" },
+  { clave: "apariencia_fondo", etiqueta: "Fondo del sitio" },
+  { clave: "apariencia_panel", etiqueta: "Fondo de secciones y chips" },
+  { clave: "apariencia_texto", etiqueta: "Color del texto" },
+];
+
+const APARIENCIA_IMAGENES: { clave: ClaveApariencia; etiqueta: string; ayuda: string }[] = [
+  {
+    clave: "apariencia_hero_imagen",
+    etiqueta: "Foto de portada",
+    ayuda: "Horizontal. Ej: /fotos/portada.jpg (o una URL https).",
+  },
+  {
+    clave: "apariencia_sobre_imagen",
+    etiqueta: "Foto de Sobre mí",
+    ayuda: "Vertical. Ej: /fotos/sobre-mi.jpg (o una URL https).",
+  },
+];
+
+const PRESETS: { nombre: string; colores: Partial<Record<ClaveApariencia, string>> }[] = [
+  {
+    nombre: "Sofy",
+    colores: {
+      apariencia_acento: "#4b3621", apariencia_acento_suave: "#3a2a19", apariencia_acento_fg: "#ffffff",
+      apariencia_fondo: "#faf8f5", apariencia_panel: "#f1ece6", apariencia_texto: "#1a1512",
+    },
+  },
+  {
+    nombre: "Rosa",
+    colores: {
+      apariencia_acento: "#b03a5b", apariencia_acento_suave: "#8f2c48", apariencia_acento_fg: "#ffffff",
+      apariencia_fondo: "#fdf6f7", apariencia_panel: "#f7e9ec", apariencia_texto: "#2a1a1e",
+    },
+  },
+  {
+    nombre: "Negro",
+    colores: {
+      apariencia_acento: "#1a1512", apariencia_acento_suave: "#000000", apariencia_acento_fg: "#ffffff",
+      apariencia_fondo: "#faf8f5", apariencia_panel: "#efeae4", apariencia_texto: "#1a1512",
+    },
+  },
+  {
+    nombre: "Verde",
+    colores: {
+      apariencia_acento: "#2f5d46", apariencia_acento_suave: "#234736", apariencia_acento_fg: "#ffffff",
+      apariencia_fondo: "#f6faf7", apariencia_panel: "#e8f1ea", apariencia_texto: "#14251c",
+    },
+  },
+  {
+    nombre: "Terracota",
+    colores: {
+      apariencia_acento: "#a2543f", apariencia_acento_suave: "#843f2f", apariencia_acento_fg: "#ffffff",
+      apariencia_fondo: "#fdf7f3", apariencia_panel: "#f6e7e1", apariencia_texto: "#2a1a15",
+    },
+  },
+];
+
+function Apariencias({ config, guardar }: { config: Record<string, string>; guardar: GuardarFn }) {
+  const claves = [...APARIENCIA_COLORES, ...APARIENCIA_IMAGENES].map((c) => c.clave);
+  const [form, setForm] = useState<Record<ClaveApariencia, string>>(
+    Object.fromEntries(claves.map((clave) => [clave, config[clave] ?? ""])) as Record<ClaveApariencia, string>,
+  );
+
+  const set = (k: ClaveApariencia) => (e: { target: { value: string } }) =>
+    setForm((f) => ({ ...f, [k]: e.target.value }));
+
+  const aplicar = (colores: Partial<Record<ClaveApariencia, string>>) =>
+    setForm((f) => ({ ...f, ...colores }));
+
+  return (
+    <form
+      className="mt-5 space-y-4"
+      onSubmit={(e) => {
+        e.preventDefault();
+        guardar(
+          { tabla: "config", datos: claves.map((clave) => ({ clave, valor: form[clave] })) },
+          "Apariencia guardada",
+        );
+      }}
+    >
+      <section className="rounded-2xl bg-card p-5 shadow-sm">
+        <p className="serif text-lg">Paletas rápidas</p>
+        <p className="mt-1 text-sm text-muted">Elegí una base y después ajustá cada color.</p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {PRESETS.map((p) => (
+            <button
+              key={p.nombre}
+              type="button"
+              onClick={() => aplicar(p.colores)}
+              className="flex items-center gap-2 rounded-full border border-linea bg-panel px-3 py-1.5 text-sm hover:border-acento"
+            >
+              <span className="flex -space-x-1">
+                {[p.colores.apariencia_acento, p.colores.apariencia_fondo, p.colores.apariencia_panel].map((c, i) => (
+                  <span key={i} className="h-4 w-4 rounded-full border border-white" style={{ background: c }} />
+                ))}
+              </span>
+              {p.nombre}
+            </button>
+          ))}
+        </div>
+      </section>
+
+      <section className="rounded-2xl bg-card p-5 shadow-sm">
+        <p className="serif text-lg">Colores</p>
+        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+          {APARIENCIA_COLORES.map(({ clave, etiqueta }) => (
+            <label key={clave} className="block">
+              <span className="mb-1 block text-xs tracking-widest text-muted uppercase">{etiqueta}</span>
+              <div className="flex items-center gap-2">
+                <input
+                  type="color"
+                  value={form[clave] || "#000000"}
+                  onChange={set(clave)}
+                  className="h-10 w-12 cursor-pointer rounded-lg border border-linea bg-panel"
+                />
+                <input value={form[clave]} onChange={set(clave)} placeholder="#4b3621" className={inputCls} />
+              </div>
+            </label>
+          ))}
+        </div>
+      </section>
+
+      <section className="rounded-2xl bg-card p-5 shadow-sm">
+        <p className="serif text-lg">Fotos</p>
+        <p className="mt-1 text-sm text-muted">
+          Subí las fotos a <code>public/fotos/</code> y escribí la ruta, o pegá una URL.
+        </p>
+        <div className="mt-3 space-y-3">
+          {APARIENCIA_IMAGENES.map(({ clave, etiqueta, ayuda }) => (
+            <label key={clave} className="block">
+              <span className="mb-1 block text-xs tracking-widest text-muted uppercase">{etiqueta}</span>
+              <input value={form[clave]} onChange={set(clave)} placeholder="/fotos/portada.jpg" className={inputCls} />
+              <span className="mt-1 block text-xs text-muted">{ayuda}</span>
+            </label>
+          ))}
+        </div>
+      </section>
+
+      <section className="rounded-2xl bg-card p-5 shadow-sm">
+        <p className="serif text-lg">Vista previa</p>
+        <div className="mt-3 rounded-2xl border border-linea p-5" style={{ background: form.apariencia_fondo, color: form.apariencia_texto }}>
+          <p className="text-xs tracking-widest uppercase" style={{ color: form.apariencia_acento }}>
+            MAQUILLADORA PROFESIONAL
+          </p>
+          <p className="serif mt-1 text-2xl">Así se va a ver tu sitio</p>
+          <p className="mt-1 text-sm">Texto de ejemplo para probar el contraste.</p>
+          <div className="mt-4 rounded-xl p-4" style={{ background: form.apariencia_panel }}>
+            <span
+              className="rounded-full px-4 py-1.5 text-xs tracking-widest uppercase"
+              style={{ background: form.apariencia_acento, color: form.apariencia_acento_fg }}
+            >
+              Reservar turno
+            </span>
+          </div>
+        </div>
+      </section>
+
+      <button type="submit" className="rounded-full bg-acento px-6 py-2.5 text-sm tracking-widest text-acento-fg uppercase hover:bg-acento-suave">
+        Guardar apariencia
+      </button>
+    </form>
+  );
+}
+
+/* ── Documentación ───────────────────────────────────────────────────────── */
+
+type Guia = {
+  id: string;
+  titulo: string;
+  descripcion: string;
+  listo: boolean;
+  donde: string;
+  imagenTitulo: string;
+  imagenPasos: string[];
+  pasos: string[];
+  nota?: string;
+  enlace?: { texto: string; url: string };
+};
+
+function Documentacion({ config, integraciones }: { config: Record<string, string>; integraciones: Integraciones }) {
+  const wa = (config.telefono_wa ?? "").trim();
+  const waOk = wa.replace(/\D/g, "").length >= 10 && wa !== "5491100000000";
+
+  const guias: Guia[] = [
+    {
+      id: "instagram",
+      titulo: "Instagram",
+      descripcion: "El botón de Instagram del sitio abre tu perfil.",
+      listo: Boolean((config.instagram ?? "").trim()),
+      donde: "Panel → Config → Instagram",
+      imagenTitulo: "instagram.com/tu.usuario",
+      imagenPasos: ["Abrí tu perfil", "Copiá el @usuario", "Pegalo en Config"],
+      pasos: [
+        "Entrá a Instagram y abrí tu perfil.",
+        "Copiá tu nombre de usuario (ej: sofy.makeup), sin la @.",
+        "En el panel andá a Config → Instagram, pegalo y guardá.",
+        "Abrí la portada del sitio y tocá el ícono de Instagram para probar.",
+      ],
+      enlace: { texto: "Abrir Instagram", url: "https://instagram.com" },
+    },
+    {
+      id: "whatsapp",
+      titulo: "WhatsApp",
+      descripcion: "El botón flotante y los enlaces de consulta abren tu WhatsApp.",
+      listo: waOk,
+      donde: "Panel → Config → WhatsApp",
+      imagenTitulo: "wa.me/5491122334455",
+      imagenPasos: ["Copiá tu número", "Código de país 549", "Sin + ni espacios"],
+      pasos: [
+        "Escribí tu número con código de país, sin +, sin espacios ni guiones (ej: 5491122334455).",
+        "En el panel andá a Config → WhatsApp y pegalo.",
+        "Guardá y probá el botón verde flotante del sitio.",
+      ],
+      nota: "El formato correcto para Argentina es 549 + código de área + número.",
+    },
+    {
+      id: "email",
+      titulo: "Email de avisos",
+      descripcion: "Ahí llegan las reservas y confirmaciones.",
+      listo: Boolean((config.email_admin ?? "").trim()),
+      donde: "Panel → Config → Tu email",
+      imagenTitulo: "reservas@tudominio.com",
+      imagenPasos: ["Tu email real", "Config → Tu email", "Guardar"],
+      pasos: [
+        "Decidí a qué email querés que lleguen los avisos de reservas.",
+        "En el panel andá a Config → Tu email, escribilo y guardá.",
+        "Para que los mails salgan de verdad, activá Resend (guía más abajo).",
+      ],
+      nota: "Mientras Resend no esté configurado, los avisos igual quedan guardados en Panel → Avisos.",
+    },
+    {
+      id: "alias",
+      titulo: "Alias o CBU para transferencias",
+      descripcion: "Se muestra en el paso de pago por transferencia.",
+      listo: Boolean((config.alias_cbu ?? "").trim()),
+      donde: "Panel → Config → Alias / CBU",
+      imagenTitulo: "Alias / CBU",
+      imagenPasos: ["Abrí tu homebanking", "Copiá alias o CBU", "Pegalo en Config"],
+      pasos: [
+        "Entrá a tu homebanking o app del banco.",
+        "Copiá el alias o el CBU de tu cuenta.",
+        "En el panel andá a Config → Alias / CBU, pegalo y guardá.",
+        "Hacé una reserva de prueba y verificá que se muestre en el paso de transferencia.",
+      ],
+    },
+    {
+      id: "mercadopago",
+      titulo: "Mercado Pago automático",
+      descripcion: "Confirma la seña sola cuando entra el pago.",
+      listo: integraciones.mercadopago,
+      donde: "Vercel → Settings → Environment Variables → MP_ACCESS_TOKEN",
+      imagenTitulo: "mercadopago.com.ar/developers",
+      imagenPasos: ["Tus integraciones", "Credenciales de producción", "Copiar Access Token"],
+      pasos: [
+        "Entrá a mercadopago.com.ar/developers con tu cuenta y abrí «Tus integraciones».",
+        "Creá una aplicación (o abrí la existente) y elegí el modo Producción.",
+        "En «Credenciales», copiá el Access Token (no el público).",
+        "En Vercel → Settings → Environment Variables agregá MP_ACCESS_TOKEN con ese valor.",
+        "Hacé Redeploy y probá una reserva eligiendo Mercado Pago.",
+      ],
+      nota: "El monto de la seña se toma siempre de la base, nunca del navegador.",
+      enlace: { texto: "Abrir panel de Mercado Pago", url: "https://www.mercadopago.com.ar/developers/panel/app" },
+    },
+    {
+      id: "resend",
+      titulo: "Mails con Resend",
+      descripcion: "Envía los avisos por email en vez de solo guardarlos.",
+      listo: integraciones.resend,
+      donde: "Vercel → Environment Variables → RESEND_API_KEY",
+      imagenTitulo: "resend.com/api-keys",
+      imagenPasos: ["Crear cuenta", "Create API Key", "Copiar y cargar en Vercel"],
+      pasos: [
+        "Creá una cuenta en resend.com.",
+        "Andá a API Keys → Create API Key y copiá la clave.",
+        "En Vercel agregá RESEND_API_KEY con esa clave.",
+        "Opcional: agregá RESEND_FROM con un remitente de tu dominio verificado.",
+        "Hacé Redeploy. Mientras no esté, los avisos quedan en Panel → Avisos.",
+      ],
+      enlace: { texto: "Abrir Resend", url: "https://resend.com/api-keys" },
+    },
+    {
+      id: "caldav",
+      titulo: "Calendario iCloud (CalDAV)",
+      descripcion: "Cada turno nuevo se guarda solo en tu calendario de iCloud.",
+      listo: integraciones.caldav,
+      donde: "Panel → Config → Calendario iCloud (CalDAV)",
+      imagenTitulo: "appleid.apple.com",
+      imagenPasos: ["Contraseñas de app", "Generar una nueva", "Cargar en Config"],
+      pasos: [
+        "Entrá a appleid.apple.com → Iniciar sesión y seguridad.",
+        "En «Contraseñas de app» generá una nueva (nombre: Sofy MakeUp).",
+        "En el panel, Config → CalDAV: cargá tu mail de iCloud y esa contraseña.",
+        "Guardá y tocá «Probar conexión iCloud».",
+      ],
+      nota: "Usá la contraseña de app, no la contraseña normal de tu Apple ID.",
+      enlace: { texto: "Abrir Apple ID", url: "https://appleid.apple.com/account/manage" },
+    },
+    {
+      id: "fotos",
+      titulo: "Fotos reales",
+      descripcion: "Reemplazá las ilustraciones por tus trabajos.",
+      listo: Boolean((config.apariencia_hero_imagen ?? "").trim() || (config.apariencia_sobre_imagen ?? "").trim()),
+      donde: "Panel → Apariencias → Fotos",
+      imagenTitulo: "public/fotos/",
+      imagenPasos: ["Guardá la foto", "Escribí la ruta", "Guardá en Apariencias"],
+      pasos: [
+        "Guardá las fotos en la carpeta public/fotos/ del proyecto.",
+        "En el panel andá a Apariencias → Fotos y escribí la ruta (ej: /fotos/portada.jpg).",
+        "Para las fotos de servicios, usá Servicios → Imagen.",
+        "Guardá y mirá la portada para confirmar que se ven bien.",
+      ],
+      nota: "Portada: foto horizontal. Sobre mí: foto vertical. Servicios: cuadrada o vertical.",
+    },
+    {
+      id: "supabase",
+      titulo: "Base de datos (Supabase)",
+      descripcion: "Guarda turnos, servicios, config y avisos.",
+      listo: integraciones.supabase,
+      donde: "Vercel → Environment Variables → NEXT_PUBLIC_SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY",
+      imagenTitulo: "supabase.com",
+      imagenPasos: ["Crear proyecto", "SQL Editor → schema.sql", "Copiar claves a Vercel"],
+      pasos: [
+        "Creá un proyecto en supabase.com.",
+        "En SQL Editor pegá y ejecutá supabase/schema.sql.",
+        "En Project Settings → API copiá la URL y la service_role key.",
+        "Cargalas en Vercel como NEXT_PUBLIC_SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY.",
+        "Hacé Redeploy.",
+      ],
+      enlace: { texto: "Abrir Supabase", url: "https://supabase.com" },
+    },
+  ];
+
+  const listos = guias.filter((g) => g.listo).length;
+  const progreso = Math.round((listos / guias.length) * 100);
+
+  return (
+    <section className="mt-5 space-y-4">
+      <div className="rounded-2xl bg-card p-5 shadow-sm">
+        <p className="serif text-lg">Documentación y pendientes</p>
+        <p className="mt-1 text-sm text-muted">
+          Guías paso a paso para terminar de configurar el sitio. Las que ya están listas se marcan en verde.
+        </p>
+        <div className="mt-3 flex items-center gap-3">
+          <div className="h-2 flex-1 overflow-hidden rounded-full bg-chip">
+            <div className="h-full rounded-full bg-acento" style={{ width: `${progreso}%` }} />
+          </div>
+          <span className="shrink-0 text-sm text-muted">{listos} de {guias.length} listas</span>
+        </div>
+        <p className="mt-3 text-xs text-muted">
+          También está todo detallado en <code>LEEME.md</code> y <code>README.md</code> del repositorio.
+        </p>
+      </div>
+
+      {guias.map((g) => (
+        <article key={g.id} className="rounded-2xl bg-card p-5 shadow-sm">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="serif text-lg">{g.titulo}</p>
+              <p className="mt-1 text-sm text-fg-suave">{g.descripcion}</p>
+            </div>
+            <span
+              className={`shrink-0 rounded-full px-3 py-1 text-[11px] tracking-wide uppercase ${
+                g.listo ? "bg-green-100 text-green-700" : "bg-chip text-fg-suave"
+              }`}
+            >
+              {g.listo ? "Listo" : "Pendiente"}
+            </span>
+          </div>
+
+          <div className="mt-3 overflow-hidden rounded-xl border border-linea">
+            <MockupGuia titulo={g.imagenTitulo} pasos={g.imagenPasos} acento={config.apariencia_acento} />
+          </div>
+
+          <ol className="mt-3 list-decimal space-y-1.5 pl-5 text-sm text-fg-suave">
+            {g.pasos.map((p) => (
+              <li key={p}>{p}</li>
+            ))}
+          </ol>
+
+          <p className="mt-3 rounded-xl bg-panel px-3 py-2 text-xs text-fg-suave">
+            <b>Dónde:</b> {g.donde}
+          </p>
+          {g.nota && <p className="mt-2 text-xs text-muted">{g.nota}</p>}
+          {g.enlace && (
+            <a href={g.enlace.url} target="_blank" rel="noreferrer" className="mt-3 inline-block text-sm text-acento underline">
+              {g.enlace.texto} ↗
+            </a>
+          )}
+        </article>
+      ))}
+
+      <div className="rounded-2xl bg-card p-5 shadow-sm">
+        <p className="serif text-lg">Recomendaciones futuras</p>
+        <ul className="mt-2 list-disc space-y-1.5 pl-5 text-sm text-fg-suave">
+          <li>Probar una reserva completa en una ventana de incógnito después de cada cambio.</li>
+          <li>Revisar precios, señas y horarios antes de cada temporada.</li>
+          <li>Hacer una copia de seguridad de Supabase una vez por mes.</li>
+          <li>Verificar el dominio propio y que el sitio abra siempre con HTTPS.</li>
+          <li>Activar Resend con un dominio verificado para que los mails no caigan en spam.</li>
+          <li>Sumar recordatorios automáticos por WhatsApp (requiere WhatsApp Business API).</li>
+          <li>Agregar una galería real de trabajos administrable desde el panel.</li>
+          <li>Evaluar lista de espera y reprogramación de turnos.</li>
+          <li>Medir visitas y reservas con Vercel Analytics o Google Analytics.</li>
+          <li>Publicar política de privacidad y términos para el tratamiento de datos.</li>
+        </ul>
+      </div>
+    </section>
+  );
+}
+
+function MockupGuia({ titulo, pasos, acento }: { titulo: string; pasos: string[]; acento?: string }) {
+  const color = acento || "#4b3621";
+  return (
+    <svg viewBox="0 0 480 200" role="img" aria-label={`Guía: ${titulo}`} className="w-full">
+      <rect width="480" height="200" fill="#ffffff" />
+      <rect width="480" height="34" fill="#f1ece6" />
+      <circle cx="18" cy="17" r="4" fill="#c4685f" />
+      <circle cx="32" cy="17" r="4" fill="#d8b26a" />
+      <circle cx="46" cy="17" r="4" fill="#7fae86" />
+      <rect x="66" y="9" width="330" height="16" rx="8" fill="#ffffff" />
+      <text x="78" y="21" fontSize="9" fill="#8a7e73">{titulo}</text>
+      {pasos.slice(0, 3).map((p, i) => (
+        <g key={p}>
+          <rect x="20" y={50 + i * 46} width="440" height="38" rx="10" fill="#faf8f5" stroke="#e9e2da" />
+          <circle cx="42" cy={69 + i * 46} r="12" fill={color} />
+          <text x="42" y={73 + i * 46} textAnchor="middle" fontSize="12" fontWeight="700" fill="#ffffff">{i + 1}</text>
+          <text x="64" y={73 + i * 46} fontSize="11" fill="#1a1512">{p}</text>
+        </g>
+      ))}
+    </svg>
   );
 }

@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { esAdmin } from "@/lib/admin";
 import { sb } from "@/lib/supabase";
 import { avisar } from "@/lib/mail";
-import { getConfig, pesos, numero } from "@/lib/config";
+import { getConfig, pesos, numero, COLOR_RE } from "@/lib/config";
 
 type Pedido = {
   tabla?: string;
@@ -15,6 +15,16 @@ const monto = (v: unknown) => Math.max(0, numero(v as string | number));
 const entero = (v: unknown, min: number, max: number) =>
   Math.min(max, Math.max(min, Math.round(numero(v as string | number))));
 const texto = (v: unknown) => String(v ?? "").trim().slice(0, 500);
+
+const CLAVES_COLOR = new Set([
+  "apariencia_acento",
+  "apariencia_acento_suave",
+  "apariencia_acento_fg",
+  "apariencia_fondo",
+  "apariencia_panel",
+  "apariencia_texto",
+]);
+const CLAVES_IMAGEN = new Set(["apariencia_hero_imagen", "apariencia_sobre_imagen"]);
 
 /**
  * POST /api/admin/guardar { tabla, accion, datos }
@@ -36,9 +46,19 @@ export async function POST(req: NextRequest) {
         : [{ clave: texto(datos.clave), valor: texto(datos.valor) }];
       for (const { clave, valor } of pares) {
         if (!clave) continue;
+        const limpio = texto(valor);
+        if (CLAVES_COLOR.has(clave) && limpio && !COLOR_RE.test(limpio)) {
+          return NextResponse.json({ error: `Color inválido en ${clave} (usá #RRGGBB).` }, { status: 400 });
+        }
+        if (CLAVES_IMAGEN.has(clave) && limpio && !/^(https?:\/\/|\/)/.test(limpio)) {
+          return NextResponse.json(
+            { error: "La imagen debe ser una ruta (/fotos/foto.jpg) o una URL http(s)." },
+            { status: 400 },
+          );
+        }
         const { error } = await sbc
           .from("config")
-          .upsert({ clave, valor: texto(valor) }, { onConflict: "clave" });
+          .upsert({ clave, valor: limpio }, { onConflict: "clave" });
         if (error) return NextResponse.json({ error: error.message }, { status: 400 });
       }
       return NextResponse.json({ ok: true });

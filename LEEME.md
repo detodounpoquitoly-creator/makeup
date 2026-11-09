@@ -16,8 +16,12 @@ Aplicación completa (Next.js + Supabase + Mercado Pago opcional) para que tus c
 
 Y para vos, el **panel de administración** (`/admin`, contraseña `maquillaje2026`, cambiable en
 `ADMIN_PASSWORD`): turnos por día con confirmación manual, servicios (precios, señas, duración,
-fotos), agenda semanal, bloqueo de fechas, configuración (WhatsApp, email, alias, textos) y
-listado de avisos de mail.
+fotos), agenda semanal, bloqueo de fechas, configuración (WhatsApp, email, alias, textos),
+**Apariencias** (colores, fotos y vista previa), **Documentación** (pendientes paso a paso con
+imágenes) y listado de avisos de mail.
+
+> El panel se abre directo desde `https://sofymakeup-mu.vercel.app/admin`. La portada ya no
+> muestra el botón “Editar”: el acceso es solo por esa dirección.
 
 ---
 
@@ -50,7 +54,12 @@ listado de avisos de mail.
   `RESEND_API_KEY`. Mientras no esté, todos los avisos quedan guardados y se ven en
   el panel (`/admin → Avisos`), así no se pierde nada.
 - **Fotos**: poné tus imágenes en `public/fotos/` (ej.: `public/fotos/novia.jpg`) y en el panel
-  → *Servicios* escribí la ruta (`/fotos/novia.jpg`) en el campo Imagen.
+  → *Servicios* escribí la ruta (`/fotos/novia.jpg`) en el campo Imagen. La portada y la foto de
+  *Sobre mí* se cambian en **Apariencias**.
+- **Calendario iCloud (CalDAV)**: creá una contraseña de app en
+  [appleid.apple.com](https://appleid.apple.com) → *Iniciar sesión y seguridad → Contraseñas de app*.
+  Cargá tu mail de iCloud y esa contraseña en **Config → Calendario iCloud (CalDAV)** y usá
+  *Probar conexión iCloud*. Cada turno nuevo se guarda solo en tu calendario.
 
 ## Datos a completar desde el panel (5 minutos)
 
@@ -61,6 +70,22 @@ listado de avisos de mail.
 - *Servicios*: poné tus **precios y señas reales** (los de ejemplo son editables).
 - *Agenda*: tus días y horarios de atención (por defecto: lunes a viernes 9–18, sábado 9–13).
 - *Bloqueos*: fechas sin atención (feriados, franco).
+- *Apariencias*: elegí una paleta (o ajustá los colores) y subí las fotos de portada y Sobre mí.
+- *Documentación*: mirá la lista de pendientes con guías paso a paso. Cada guía indica dónde se
+  configura y qué falta para completarla.
+
+## Recomendaciones futuras
+
+- Probar una reserva completa en incógnito después de cada cambio.
+- Revisar precios, señas y horarios antes de cada temporada.
+- Hacer un backup mensual de Supabase.
+- Verificar dominio propio y HTTPS.
+- Activar Resend con dominio verificado para que los mails no caigan en spam.
+- Sumar recordatorios automáticos por WhatsApp (WhatsApp Business API).
+- Agregar una galería real de trabajos administrable desde el panel.
+- Evaluar lista de espera y reprogramación de turnos.
+- Medir visitas y reservas con analítica.
+- Publicar política de privacidad y términos de uso.
 
 ## Cómo funciona por dentro (resumen técnico)
 
