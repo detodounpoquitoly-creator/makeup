@@ -1,4 +1,4 @@
-import { NextResponse, type NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import { esAdmin } from "@/lib/admin";
 import { getConfig } from "@/lib/config";
 import { credCalDAV, descubrir } from "@/lib/caldav";
@@ -8,7 +8,7 @@ import { credCalDAV, descubrir } from "@/lib/caldav";
  * Verifica la conexión iCloud/CalDAV con lo guardado en Config
  * y lista las carpetas de calendario encontradas.
  */
-export async function POST(_req: NextRequest) {
+export async function POST() {
   if (!(await esAdmin())) {
     return NextResponse.json({ error: "No autorizado." }, { status: 401 });
   }

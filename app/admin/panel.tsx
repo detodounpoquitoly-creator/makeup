@@ -471,9 +471,10 @@ type ClaveConfig =
   | "estudio_direccion" | "estudio_horarios" | "estudio_nota"
   | "instagram" | "telefono_wa" | "email_admin" | "alias_cbu"
   | "nombre_negocio"
-  | "hold_minutos" | "horas_vence_transferencia" | "min_extra";
+  | "hold_minutos" | "horas_vence_transferencia" | "min_extra"
+  | "caldav_user" | "caldav_pass" | "caldav_url" | "caldav_carpeta";
 
-const CAMPOS: { clave: ClaveConfig; etiqueta: string; area?: boolean; ayuda?: string }[] = [
+const CAMPOS: { clave: ClaveConfig; etiqueta: string; area?: boolean; ayuda?: string; secreto?: boolean; grupo?: string }[] = [
   { clave: "marca", etiqueta: "Nombre corto (logo)" },
   { clave: "nombre_negocio", etiqueta: "Título de la pestaña", ayuda: "Ej: Sofy MakeUp — Reservá tu turno" },
   { clave: "marca_sufijo", etiqueta: "Sufijo del logo (ej: MAKEUP)" },
@@ -496,12 +497,40 @@ const CAMPOS: { clave: ClaveConfig; etiqueta: string; area?: boolean; ayuda?: st
   { clave: "hold_minutos", etiqueta: "Minutos de bloqueo del horario (ej: 60)" },
   { clave: "horas_vence_transferencia", etiqueta: "Horas de gracia para transferencias" },
   { clave: "min_extra", etiqueta: "Minutos de recambio entre turnos" },
+  { clave: "caldav_user", etiqueta: "CalDAV — mail de iCloud", grupo: "Calendario iCloud (CalDAV)", ayuda: "El mail completo de la cuenta de iCloud." },
+  { clave: "caldav_pass", etiqueta: "CalDAV — contraseña de app", grupo: "Calendario iCloud (CalDAV)", secreto: true, ayuda: "No es la contraseña normal: se crea en appleid.apple.com → Iniciar sesión y seguridad → Contraseñas de app." },
+  { clave: "caldav_url", etiqueta: "CalDAV — servidor", grupo: "Calendario iCloud (CalDAV)", ayuda: "Por defecto https://caldav.icloud.com/ (cambiar solo para otro servidor CalDAV)." },
+  { clave: "caldav_carpeta", etiqueta: "CalDAV — carpeta (opcional)", grupo: "Calendario iCloud (CalDAV)", ayuda: "Ej: calendar/. Si se deja vacío se detecta sola." },
 ];
 
 function Configuracion({ config, guardar }: { config: Record<string, string>; guardar: GuardarFn }) {
   const [form, setForm] = useState<Record<ClaveConfig, string>>(
     Object.fromEntries(CAMPOS.map(({ clave }) => [clave, config[clave] ?? ""])) as Record<ClaveConfig, string>,
   );
+  const [probando, setProbando] = useState(false);
+  const [prueba, setPrueba] = useState("");
+
+  const probarCalDAV = async () => {
+    setProbando(true);
+    setPrueba("");
+    try {
+      const g = await fetch("/api/admin/guardar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tabla: "config", datos: CAMPOS.map(({ clave }) => ({ clave, valor: form[clave] })) }),
+      });
+      if (!g.ok) throw new Error("No se pudo guardar antes de probar.");
+      const r = await fetch("/api/admin/caldav-probar", { method: "POST" });
+      const j = (await r.json().catch(() => ({}))) as { ok?: boolean; error?: string; carpetas?: string[] };
+      if (!r.ok || !j.ok) throw new Error(j.error ?? "No se pudo conectar.");
+      const carpetas = j.carpetas ?? [];
+      setPrueba(carpetas.length ? `Conexión OK. Carpetas: ${carpetas.join(", ")}` : "Conexión OK.");
+    } catch (e) {
+      setPrueba(e instanceof Error ? e.message : String(e));
+    } finally {
+      setProbando(false);
+    }
+  };
 
   return (
     <form
@@ -517,30 +546,55 @@ function Configuracion({ config, guardar }: { config: Record<string, string>; gu
       <p className="serif text-lg">Configuración del sitio</p>
       <p className="mt-1 text-sm text-muted">Acá se edita todo lo que ve la web: portada, textos, Sobre mí y datos de contacto.</p>
       <div className="mt-4 space-y-3">
-        {CAMPOS.map(({ clave, etiqueta, area, ayuda }) => (
-          <label key={clave} className="block">
-            <span className="mb-1 block text-xs tracking-widest text-muted uppercase">{etiqueta}</span>
-            {area ? (
-              <textarea
-                rows={2}
-                value={form[clave]}
-                onChange={(e) => setForm((f) => ({ ...f, [clave]: e.target.value }))}
-                className="w-full rounded-xl border border-linea bg-panel px-3 py-2 text-sm outline-none focus:border-acento"
-              />
-            ) : (
-              <input
-                value={form[clave]}
-                onChange={(e) => setForm((f) => ({ ...f, [clave]: e.target.value }))}
-                className="w-full rounded-xl border border-linea bg-panel px-3 py-2 text-sm outline-none focus:border-acento"
-              />
-            )}
-            {ayuda && <span className="mt-1 block text-xs text-muted">{ayuda}</span>}
-          </label>
-        ))}
+        {CAMPOS.map(({ clave, etiqueta, area, ayuda, secreto, grupo }, i) => {
+          const nuevoGrupo = grupo && grupo !== CAMPOS[i - 1]?.grupo;
+          return (
+            <div key={clave}>
+              {nuevoGrupo && (
+                <p className="mt-6 mb-2 border-t border-linea pt-4 text-xs tracking-widest text-muted uppercase">{grupo}</p>
+              )}
+              <label className="block">
+                <span className="mb-1 block text-xs tracking-widest text-muted uppercase">{etiqueta}</span>
+                {area ? (
+                  <textarea
+                    rows={2}
+                    value={form[clave]}
+                    onChange={(e) => setForm((f) => ({ ...f, [clave]: e.target.value }))}
+                    className="w-full rounded-xl border border-linea bg-panel px-3 py-2 text-sm outline-none focus:border-acento"
+                  />
+                ) : (
+                  <input
+                    type={secreto ? "password" : "text"}
+                    autoComplete={secreto ? "new-password" : undefined}
+                    value={form[clave]}
+                    onChange={(e) => setForm((f) => ({ ...f, [clave]: e.target.value }))}
+                    className="w-full rounded-xl border border-linea bg-panel px-3 py-2 text-sm outline-none focus:border-acento"
+                  />
+                )}
+                {ayuda && <span className="mt-1 block text-xs text-muted">{ayuda}</span>}
+              </label>
+            </div>
+          );
+        })}
       </div>
-      <button type="submit" className="mt-5 rounded-full bg-acento px-6 py-2.5 text-sm tracking-widest text-acento-fg uppercase hover:bg-acento-suave">
-        Guardar configuración
-      </button>
+      <div className="mt-5 flex flex-wrap items-center gap-3">
+        <button type="submit" className="rounded-full bg-acento px-6 py-2.5 text-sm tracking-widest text-acento-fg uppercase hover:bg-acento-suave">
+          Guardar configuración
+        </button>
+        <button
+          type="button"
+          onClick={probarCalDAV}
+          disabled={probando}
+          className="rounded-full border border-linea px-6 py-2.5 text-sm tracking-widest text-fg-suave uppercase hover:bg-chip disabled:opacity-40"
+        >
+          {probando ? "Probando…" : "Probar conexión iCloud"}
+        </button>
+      </div>
+      {prueba && (
+        <p className={`mt-3 rounded-xl px-4 py-2 text-sm ${prueba.startsWith("Conexión OK") ? "bg-panel text-green-700" : "bg-red-50 text-red-700"}`}>
+          {prueba}
+        </p>
+      )}
     </form>
   );
 }
