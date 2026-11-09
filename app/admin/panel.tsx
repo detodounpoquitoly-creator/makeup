@@ -748,6 +748,50 @@ function Apariencias({ config, guardar }: { config: Record<string, string>; guar
       </section>
 
       <section className="rounded-2xl bg-card p-5 shadow-sm">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="serif text-lg">App para iPhone</p>
+            <p className="mt-1 text-sm text-muted">
+              Instalá el sitio como app: queda con ícono en la pantalla de inicio y abre a pantalla completa.
+            </p>
+          </div>
+          <img
+            src="/apple-touch-icon.png"
+            alt="Ícono de la app"
+            className="h-16 w-16 shrink-0 rounded-2xl shadow-sm"
+          />
+        </div>
+
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          <a
+            href="/api/app/iphone"
+            className="rounded-full bg-acento px-5 py-2 text-sm tracking-widest text-acento-fg uppercase hover:bg-acento-suave"
+          >
+            Descargar para iPhone
+          </a>
+          <Link
+            href="/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="rounded-full border border-linea bg-panel px-5 py-2 text-sm text-fg hover:border-acento"
+          >
+            Ver sitio
+          </Link>
+        </div>
+
+        <ol className="mt-4 space-y-2 text-sm text-muted">
+          <li>1. Tocá “Descargar para iPhone” y aceptá la descarga del perfil.</li>
+          <li>2. En el iPhone andá a Ajustes → General → VPN y gestión de dispositivos → Perfil descargado → Instalar.</li>
+          <li>3. El ícono de la app aparece en la pantalla de inicio.</li>
+        </ol>
+
+        <p className="mt-4 rounded-xl bg-panel px-4 py-3 text-xs text-muted">
+          También podés instalarla sin descargar nada: abrí el sitio en Safari, tocá Compartir y elegí
+          “Añadir a pantalla de inicio”.
+        </p>
+      </section>
+
+      <section className="rounded-2xl bg-card p-5 shadow-sm">
         <p className="serif text-lg">Vista previa</p>
         <div className="mt-3 rounded-2xl border border-linea p-5" style={{ background: form.apariencia_fondo, color: form.apariencia_texto }}>
           <p className="text-xs tracking-widest uppercase" style={{ color: form.apariencia_acento }}>
